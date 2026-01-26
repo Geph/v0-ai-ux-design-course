@@ -1,4 +1,4 @@
-# User Experience Design with AI: Knowledge Library
+# Course Knowledge Library
 
 ![Knowledge Library Preview](Screenshot.png)
 
