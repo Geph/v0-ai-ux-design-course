@@ -97,17 +97,6 @@ export function Header({ resources, onAddResource, onImport, popularTags }: Head
             </div>
           </div>
           
-          {/* Image Stat */}
-<div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border">
-            <div className="w-8 h-8 rounded-lg bg-[oklch(0.55_0.22_250)]/10 flex items-center justify-center">
-              <Link className="h-4 w-4 text-[oklch(0.55_0.22_250)]" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground">{stats.links}</p>
-              <p className="text-xs text-muted-foreground">Links</p>
-            </div>
-          </div>
-
           <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border">
             <div className="w-8 h-8 rounded-lg bg-[oklch(0.70_0.18_145)]/10 flex items-center justify-center">
               <ImageIcon className="h-4 w-4 text-[oklch(0.70_0.18_145)]" />
