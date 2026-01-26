@@ -1,6 +1,6 @@
 # User Experience Design with AI: Knowledge Library
 
-![Knowledge Library Preview](screenshot.png)
+![Knowledge Library Preview](Screenshot.png)
 
 A comprehensive web-based resource library for organizing, searching, and managing educational materials for the "User Experience Design with AI" studio course.
 
