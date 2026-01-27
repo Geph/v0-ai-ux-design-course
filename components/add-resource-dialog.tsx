@@ -153,13 +153,14 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
     setIsGeneratingThumbnail(true)
     
     try {
-      // Use a screenshot API service
-      const screenshotUrl = `https://api.screenshotone.com/take?url=${encodeURIComponent(url)}&viewport_width=1200&viewport_height=800&format=jpg&image_quality=80&block_ads=true&block_cookie_banners=true&block_trackers=true`
-      
-      // Alternative free service as fallback
-      const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
-      
-      setThumbnail(thumbnailUrl)
+      // For PDFs, use a static thumbnail with PDF icon
+      if (type === "pdf") {
+        setThumbnail("/pdf-thumbnail.jpg")
+      } else {
+        // For other types, use screenshot service
+        const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
+        setThumbnail(thumbnailUrl)
+      }
     } catch (error) {
       console.error("Failed to generate thumbnail:", error)
     } finally {
