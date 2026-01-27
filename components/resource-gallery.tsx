@@ -7,11 +7,10 @@ import { PackageOpen } from "lucide-react"
 interface ResourceGalleryProps {
   resources: Resource[]
   onTagClick: (tag: string) => void
-  onCiteClick: (resource: Resource) => void
   onEditClick: (resource: Resource) => void
 }
 
-export function ResourceGallery({ resources, onTagClick, onCiteClick, onEditClick }: ResourceGalleryProps) {
+export function ResourceGallery({ resources, onTagClick, onEditClick }: ResourceGalleryProps) {
   if (resources.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -33,7 +32,6 @@ export function ResourceGallery({ resources, onTagClick, onCiteClick, onEditClic
           key={resource.id} 
           resource={resource} 
           onTagClick={onTagClick}
-          onCiteClick={onCiteClick}
           onEditClick={onEditClick}
         />
       ))}

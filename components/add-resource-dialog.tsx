@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Upload, Link as LinkIcon, FileText, Video, Globe, X, AlertCircle, Loader2, Sparkles } from "lucide-react"
+import { Plus, Upload, Link as LinkIcon, FileText, Video, Globe, X, AlertCircle, Loader2, Sparkles, Camera } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { detectResourceType, generateId } from "@/lib/xml-utils"
 import type { Resource, ResourceType } from "@/lib/resources-data"
@@ -42,6 +42,7 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
   const [fileError, setFileError] = useState<string | null>(null)
   const [isScrapingUrl, setIsScrapingUrl] = useState(false)
   const [scrapedSuccessfully, setScrapedSuccessfully] = useState(false)
+  const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false)
 
   const resetForm = () => {
     setUrl("")
@@ -60,6 +61,7 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
     setFileError(null)
     setIsScrapingUrl(false)
     setScrapedSuccessfully(false)
+    setIsGeneratingThumbnail(false)
   }
 
   const handleAddTag = (tag: string) => {
@@ -142,6 +144,27 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
   const handleUrlBlur = () => {
     if (url && !isScrapingUrl && !scrapedSuccessfully) {
       scrapeUrl(url)
+    }
+  }
+
+  const generateThumbnail = async () => {
+    if (!url) return
+    
+    setIsGeneratingThumbnail(true)
+    
+    try {
+      // For PDFs, use a static thumbnail with PDF icon
+      if (type === "pdf") {
+        setThumbnail("/pdf-thumbnail.jpg")
+      } else {
+        // For other types, use screenshot service
+        const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
+        setThumbnail(thumbnailUrl)
+      }
+    } catch (error) {
+      console.error("Failed to generate thumbnail:", error)
+    } finally {
+      setIsGeneratingThumbnail(false)
     }
   }
 
@@ -619,13 +642,38 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
 
               <div className="space-y-2">
                 <Label htmlFor="thumbnail">Thumbnail URL (optional)</Label>
-                <Input
-                  id="thumbnail"
-                  type="url"
-                  value={thumbnail}
-                  onChange={(e) => setThumbnail(e.target.value)}
-                  placeholder="https://..."
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="thumbnail"
+                    type="url"
+                    value={thumbnail}
+                    onChange={(e) => setThumbnail(e.target.value)}
+                    placeholder="https://..."
+                    className="flex-1"
+                  />
+                  {url && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={generateThumbnail}
+                      disabled={isGeneratingThumbnail}
+                      className="bg-transparent shrink-0"
+                      title="Generate thumbnail from screenshot"
+                    >
+                      {isGeneratingThumbnail ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Camera className="h-4 w-4" />
+                      )}
+                    </Button>
+                  )}
+                </div>
+                {thumbnail && (
+                  <div className="mt-2 border rounded-lg overflow-hidden">
+                    <img src={thumbnail} alt="Thumbnail preview" className="w-full h-32 object-cover" />
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3 pt-2">

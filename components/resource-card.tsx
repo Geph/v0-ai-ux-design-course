@@ -1,6 +1,6 @@
 "use client"
 
-import { FileText, Play, Link, Clock, BookOpen, User, Quote, Settings, ImageIcon } from "lucide-react"
+import { FileText, Play, Link, Clock, BookOpen, User, Settings, ImageIcon } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils"
 interface ResourceCardProps {
   resource: Resource
   onTagClick: (tag: string) => void
-  onCiteClick: (resource: Resource) => void
   onEditClick: (resource: Resource) => void
 }
 
@@ -49,7 +48,7 @@ const tagColors = [
   "bg-[oklch(0.70_0.18_145)]/10 text-[oklch(0.55_0.18_145)] hover:bg-[oklch(0.70_0.18_145)]/20",
 ]
 
-export function ResourceCard({ resource, onTagClick, onCiteClick, onEditClick }: ResourceCardProps) {
+export function ResourceCard({ resource, onTagClick, onEditClick }: ResourceCardProps) {
   const config = typeConfig[resource.type]
   const Icon = config.icon
 
@@ -87,7 +86,7 @@ export function ResourceCard({ resource, onTagClick, onCiteClick, onEditClick }:
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         
-        {/* Top Row: Type Badge, Cite Button, and Edit Button */}
+        {/* Top Row: Type Badge and Edit Button */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
           <div className={cn(
             "flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-lg",
@@ -98,34 +97,19 @@ export function ResourceCard({ resource, onTagClick, onCiteClick, onEditClick }:
             <span className="text-xs font-semibold">{config.label}</span>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              className="h-8 px-3 text-xs font-medium gap-1.5 bg-white/90 hover:bg-white text-foreground shadow-lg"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                onCiteClick(resource)
-              }}
-            >
-              <Quote className="h-3.5 w-3.5" />
-              Cite
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="h-8 w-8 p-0 bg-white/90 hover:bg-white text-foreground shadow-lg"
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                onEditClick(resource)
-              }}
-            >
-              <Settings className="h-4 w-4" />
-              <span className="sr-only">Edit resource</span>
-            </Button>
-          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="h-8 w-8 p-0 bg-white/90 hover:bg-white text-foreground shadow-lg"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onEditClick(resource)
+            }}
+          >
+            <Settings className="h-4 w-4" />
+            <span className="sr-only">Edit resource</span>
+          </Button>
         </div>
 
         {/* Duration/Pages and Year Badges */}

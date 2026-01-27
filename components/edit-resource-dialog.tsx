@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Save, Trash2, FileText, Video, Globe, X, Plus, ImageIcon } from "lucide-react"
+import { Save, Trash2, FileText, Video, Globe, X, Plus, ImageIcon, Camera, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Resource, ResourceType } from "@/lib/resources-data"
 
@@ -42,6 +42,7 @@ export function EditResourceDialog({
   const [url, setUrl] = useState("")
   const [type, setType] = useState<ResourceType>("link")
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false)
 
   useEffect(() => {
     if (resource) {
@@ -104,6 +105,27 @@ export function EditResourceDialog({
     if (resource) {
       onDelete(resource.id)
       onOpenChange(false)
+    }
+  }
+
+  const generateThumbnail = async () => {
+    if (!url) return
+    
+    setIsGeneratingThumbnail(true)
+    
+    try {
+      // For PDFs, use a static thumbnail with PDF icon
+      if (type === "pdf") {
+        setThumbnail("/pdf-thumbnail.jpg")
+      } else {
+        // For other types, use screenshot service
+        const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
+        setThumbnail(thumbnailUrl)
+      }
+    } catch (error) {
+      console.error("Failed to generate thumbnail:", error)
+    } finally {
+      setIsGeneratingThumbnail(false)
     }
   }
 
@@ -320,13 +342,38 @@ export function EditResourceDialog({
 
           <div className="space-y-2">
             <Label htmlFor="edit-thumbnail">Thumbnail URL</Label>
-            <Input
-              id="edit-thumbnail"
-              type="url"
-              value={thumbnail}
-              onChange={(e) => setThumbnail(e.target.value)}
-              placeholder="https://..."
-            />
+            <div className="flex gap-2">
+              <Input
+                id="edit-thumbnail"
+                type="url"
+                value={thumbnail}
+                onChange={(e) => setThumbnail(e.target.value)}
+                placeholder="https://..."
+                className="flex-1"
+              />
+              {url && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={generateThumbnail}
+                  disabled={isGeneratingThumbnail}
+                  className="bg-transparent shrink-0"
+                  title="Generate thumbnail from screenshot"
+                >
+                  {isGeneratingThumbnail ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+            </div>
+            {thumbnail && (
+              <div className="mt-2 border rounded-lg overflow-hidden">
+                <img src={thumbnail} alt="Thumbnail preview" className="w-full h-32 object-cover" />
+              </div>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4 border-t">
