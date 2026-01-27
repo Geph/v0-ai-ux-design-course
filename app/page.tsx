@@ -4,9 +4,7 @@ import { useState, useMemo, useEffect } from "react"
 import { Header } from "@/components/header"
 import { SearchBar } from "@/components/search-bar"
 import { TagFilter } from "@/components/tag-filter"
-import { TypeFilter } from "@/components/type-filter"
 import { ResourceGallery } from "@/components/resource-gallery"
-import { CitationDialog } from "@/components/citation-dialog"
 import { EditResourceDialog } from "@/components/edit-resource-dialog"
 import { resources as initialResources, type Resource, type ResourceType, getPopularTags } from "@/lib/resources-data"
 import { xmlToResources, resourcesToXml } from "@/lib/xml-utils"
@@ -21,8 +19,6 @@ export default function ResourceLibrary() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [selectedType, setSelectedType] = useState<ResourceType | "all">("all")
-  const [citationResource, setCitationResource] = useState<Resource | null>(null)
-  const [citationDialogOpen, setCitationDialogOpen] = useState(false)
   const [editResource, setEditResource] = useState<Resource | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
 
@@ -114,11 +110,6 @@ export default function ResourceLibrary() {
     setResources(importedResources)
   }
 
-  const handleCiteClick = (resource: Resource) => {
-    setCitationResource(resource)
-    setCitationDialogOpen(true)
-  }
-
   const handleEditClick = (resource: Resource) => {
     setEditResource(resource)
     setEditDialogOpen(true)
@@ -151,15 +142,6 @@ export default function ResourceLibrary() {
           {/* Search Bar */}
           <div className="mb-6">
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
-          </div>
-
-          {/* Type Filter */}
-          <div className="mb-4">
-            <TypeFilter 
-              selectedType={selectedType} 
-              onTypeChange={setSelectedType}
-              counts={typeCounts}
-            />
           </div>
 
           {/* Popular Tags */}
@@ -200,17 +182,9 @@ export default function ResourceLibrary() {
         <ResourceGallery 
           resources={filteredResources} 
           onTagClick={handleTagToggle}
-          onCiteClick={handleCiteClick}
           onEditClick={handleEditClick}
         />
       </main>
-
-      {/* Citation Dialog */}
-      <CitationDialog
-        resource={citationResource}
-        open={citationDialogOpen}
-        onOpenChange={setCitationDialogOpen}
-      />
 
       {/* Edit Resource Dialog */}
       <EditResourceDialog
