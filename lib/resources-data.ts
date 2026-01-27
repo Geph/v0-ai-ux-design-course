@@ -176,6 +176,7 @@ export const BASE_POPULAR_TAGS = [
   "Study",
   "Tutorial",
   "Qualitative",
+  "Quantitative / Data",
   "Quantitative/Automated",
   "Methodology"
 ]

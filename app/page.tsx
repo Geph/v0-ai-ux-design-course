@@ -137,7 +137,7 @@ export default function ResourceLibrary() {
       />
 
       {/* Search and Filters Section */}
-      <section className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
+      <section className="sticky top-0 z-40 bg-card border-b-2 border-border shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Search Bar */}
           <div className="mb-6">

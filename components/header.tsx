@@ -1,6 +1,6 @@
 "use client"
 
-import { BookOpen, FileText, Video, Link, ImageIcon } from "lucide-react"
+import { BookOpen } from "lucide-react"
 import { AddResourceDialog } from "./add-resource-dialog"
 import { SettingsDialog } from "./settings-dialog"
 import type { Resource } from "@/lib/resources-data"
@@ -13,14 +13,6 @@ interface HeaderProps {
 }
 
 export function Header({ resources, onAddResource, onImport, popularTags }: HeaderProps) {
-  const stats = {
-    total: resources.length,
-    pdfs: resources.filter(r => r.type === "pdf").length,
-    videos: resources.filter(r => r.type === "video").length,
-    links: resources.filter(r => r.type === "link").length,
-    graphics: resources.filter(r => r.type === "graphic").length,
-  }
-
   return (
     <header className="relative overflow-hidden">
       {/* Background Pattern */}
@@ -50,62 +42,9 @@ export function Header({ resources, onAddResource, onImport, popularTags }: Head
         </p>
 
         {/* Action Buttons */}
-        <div className="flex justify-center gap-3 mb-8">
+        <div className="flex justify-center gap-3">
           <AddResourceDialog onAddResource={onAddResource} popularTags={popularTags} />
           <SettingsDialog resources={resources} onImport={onImport} />
-        </div>
-
-        {/* Stats */}
-        <div className="flex flex-wrap justify-center gap-4 md:gap-8">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <BookOpen className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground">{stats.total}</p>
-              <p className="text-xs text-muted-foreground">Resources</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border">
-            <div className="w-8 h-8 rounded-lg bg-[oklch(0.60_0.22_25)]/10 flex items-center justify-center">
-              <FileText className="h-4 w-4 text-[oklch(0.60_0.22_25)]" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground">{stats.pdfs}</p>
-              <p className="text-xs text-muted-foreground">PDFs</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border">
-            <div className="w-8 h-8 rounded-lg bg-[oklch(0.60_0.20_330)]/10 flex items-center justify-center">
-              <Video className="h-4 w-4 text-[oklch(0.60_0.20_330)]" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground">{stats.videos}</p>
-              <p className="text-xs text-muted-foreground">Videos</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border">
-            <div className="w-8 h-8 rounded-lg bg-[oklch(0.55_0.22_250)]/10 flex items-center justify-center">
-              <Link className="h-4 w-4 text-[oklch(0.55_0.22_250)]" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground">{stats.links}</p>
-              <p className="text-xs text-muted-foreground">Links</p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border">
-            <div className="w-8 h-8 rounded-lg bg-[oklch(0.70_0.18_145)]/10 flex items-center justify-center">
-              <ImageIcon className="h-4 w-4 text-[oklch(0.70_0.18_145)]" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-foreground">{stats.graphics}</p>
-              <p className="text-xs text-muted-foreground">Graphics</p>
-            </div>
-          </div>
         </div>
       </div>
     </header>
