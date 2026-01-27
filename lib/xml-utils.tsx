@@ -192,28 +192,69 @@ export function detectResourceType(url: string): ResourceType {
   return 'link'
 }
 
+// Parse author name into APA format (Last, F. I.)
+function formatAuthorApa(author: string): string {
+  if (!author || author === 'Unknown Author') {
+    return 'Unknown Author'
+  }
+  
+  // Try to parse the author name
+  const parts = author.trim().split(/\s+/)
+  
+  if (parts.length === 1) {
+    // Single name, treat as last name
+    return parts[0]
+  } else if (parts.length === 2) {
+    // First and last name
+    const [first, last] = parts
+    return `${last}, ${first.charAt(0).toUpperCase()}.`
+  } else if (parts.length >= 3) {
+    // First, middle, last or multiple authors
+    // Check if it contains 'and' or '&' for multiple authors
+    if (author.includes(' and ') || author.includes(' & ')) {
+      // Multiple authors - split and format each
+      const authorList = author.split(/\s+(?:and|&)\s+/)
+      const formattedAuthors = authorList.map(a => formatAuthorApa(a.trim()))
+      
+      if (formattedAuthors.length === 2) {
+        return `${formattedAuthors[0]}, & ${formattedAuthors[1]}`
+      } else if (formattedAuthors.length > 2) {
+        const lastAuthor = formattedAuthors[formattedAuthors.length - 1]
+        const otherAuthors = formattedAuthors.slice(0, -1).join(', ')
+        return `${otherAuthors}, & ${lastAuthor}`
+      }
+    }
+    
+    // Single author with middle name/initial
+    const last = parts[parts.length - 1]
+    const initials = parts.slice(0, -1).map(p => p.charAt(0).toUpperCase() + '.').join(' ')
+    return `${last}, ${initials}`
+  }
+  
+  return author
+}
+
 // Generate APA citation
+// Format: Author, A. A. (Year). Title. Source. URL
 export function generateApaCitation(resource: Resource): string {
-  const author = resource.author || 'Unknown Author'
+  const formattedAuthor = formatAuthorApa(resource.author || 'Unknown Author')
   const year = resource.year || new Date(resource.dateAdded).getFullYear()
   const title = resource.title
   
   // Format based on type
   if (resource.type === 'video') {
-    // APA format for online video
-    return `${author}. (${year}). ${title} [Video]. Retrieved from ${resource.url}`
+    // APA format for online video: Author, A. A. (Year). Title [Video]. Platform. URL
+    return `${formattedAuthor} (${year}). ${title} [Video]. ${resource.url}`
   } else if (resource.type === 'pdf') {
-    // APA format for PDF/document
-    if (resource.pages) {
-      return `${author}. (${year}). ${title} [PDF document, ${resource.pages} pages]. Retrieved from ${resource.url}`
-    }
-    return `${author}. (${year}). ${title} [PDF document]. Retrieved from ${resource.url}`
+    // APA format for journal article/PDF
+    // Note: This is a simplified format. Full APA would need journal name, volume, issue, pages
+    return `${formattedAuthor} (${year}). ${title}. ${resource.url}`
   } else if (resource.type === 'graphic') {
     // APA format for graphic/image
-    return `${author}. (${year}). ${title} [Graphic]. Retrieved from ${resource.url}`
+    return `${formattedAuthor} (${year}). ${title} [Graphic]. ${resource.url}`
   } else {
-    // APA format for web page
-    return `${author}. (${year}). ${title}. Retrieved from ${resource.url}`
+    // APA format for web page: Author, A. A. (Year). Title. Site name. URL
+    return `${formattedAuthor} (${year}). ${title}. ${resource.url}`
   }
 }
 
