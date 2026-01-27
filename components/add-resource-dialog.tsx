@@ -36,6 +36,7 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
   const [thumbnail, setThumbnail] = useState("")
   const [duration, setDuration] = useState("")
   const [pages, setPages] = useState("")
+  const [year, setYear] = useState("")
   const [showForm, setShowForm] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [fileError, setFileError] = useState<string | null>(null)
@@ -53,6 +54,7 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
     setThumbnail("")
     setDuration("")
     setPages("")
+    setYear("")
     setShowForm(false)
     setUploadedFile(null)
     setFileError(null)
@@ -239,9 +241,10 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
       summary: summary || "No description provided.",
       tags: tags,
       dateAdded: new Date().toISOString().split("T")[0],
-      author: author || undefined,
+      author: author ? author.slice(0, 160) : undefined,
       duration: detectedType === "video" && duration ? duration : undefined,
       pages: detectedType === "pdf" && pages ? parseInt(pages, 10) : undefined,
+      year: year ? parseInt(year, 10) : undefined,
       localPath: localPath,
     }
 
@@ -441,9 +444,11 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
                 <Input
                   id="author"
                   value={author}
-                  onChange={(e) => setAuthor(e.target.value)}
+                  onChange={(e) => setAuthor(e.target.value.slice(0, 160))}
                   placeholder="Author or organization name"
+                  maxLength={160}
                 />
+                <p className="text-xs text-muted-foreground text-right">{author.length}/160</p>
               </div>
 
               {!uploadedFile && (
@@ -492,20 +497,49 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
               )}
 
               {detectedType === "pdf" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="pages">Page Count</Label>
+                    <Input
+                      id="pages"
+                      type="number"
+                      value={pages}
+                      onChange={(e) => setPages(e.target.value)}
+                      placeholder="e.g., 24"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="year">Year</Label>
+                    <Input
+                      id="year"
+                      type="number"
+                      value={year}
+                      onChange={(e) => setYear(e.target.value)}
+                      placeholder="e.g., 2024"
+                      min={1900}
+                      max={2100}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {detectedType !== "pdf" && (
                 <div className="space-y-2">
-                  <Label htmlFor="pages">Page Count</Label>
+                  <Label htmlFor="year-other">Year</Label>
                   <Input
-                    id="pages"
+                    id="year-other"
                     type="number"
-                    value={pages}
-                    onChange={(e) => setPages(e.target.value)}
-                    placeholder="e.g., 24"
+                    value={year}
+                    onChange={(e) => setYear(e.target.value)}
+                    placeholder="e.g., 2024"
+                    min={1900}
+                    max={2100}
                   />
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="summary">Summary</Label>
+                <Label htmlFor="summary">Summary / Abstract</Label>
                 <Textarea
                   id="summary"
                   value={summary}
