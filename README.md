@@ -44,7 +44,7 @@ A comprehensive web-based resource library for organizing, searching, and managi
 
 Resources are stored in the following XML structure:
 
-```xml
+\`\`\`xml
 <?xml version="1.0" encoding="UTF-8"?>
 <resourceLibrary>
   <metadata>
@@ -72,7 +72,7 @@ Resources are stored in the following XML structure:
     </resource>
   </resources>
 </resourceLibrary>
-```
+\`\`\`
 
 ## Getting Started
 
@@ -91,7 +91,7 @@ Resources are stored in the following XML structure:
 
 ### Local Development
 
-```bash
+\`\`\`bash
 # Clone the repository
 git clone <your-repo-url>
 cd knowledge-library
@@ -105,25 +105,25 @@ bun install
 npm run dev
 # or
 bun dev
-```
+\`\`\`
 
 Open [http://localhost:3000](http://localhost:3000) to view the app.
 
 ### Building for Production
 
-```bash
+\`\`\`bash
 # Create a production build
 npm run build
 
 # The output will be in the `.next` folder (for Node.js deployment)
 # or `out` folder (for static export)
-```
+\`\`\`
 
 ### Static Export (for hosting on any web server)
 
 To deploy to a subdirectory on your own website, add this to `next.config.mjs`:
 
-```js
+\`\`\`js
 const nextConfig = {
   output: 'export',
   basePath: '/your-subdirectory', // e.g., '/knowledge-library'
@@ -131,13 +131,13 @@ const nextConfig = {
 }
 
 export default nextConfig
-```
+\`\`\`
 
 Then build and export:
 
-```bash
+\`\`\`bash
 npm run build
-```
+\`\`\`
 
 The static files will be in the `out` directory. Upload the contents of `out` to your web server's directory.
 
@@ -152,10 +152,10 @@ The easiest way to deploy is using Vercel:
 ### Deploying to Other Platforms
 
 **Netlify:**
-```bash
+\`\`\`bash
 npm run build
 # Upload the `out` folder to Netlify (after enabling static export)
-```
+\`\`\`
 
 **Apache/Nginx (Self-hosted):**
 1. Enable static export in `next.config.mjs` as shown above

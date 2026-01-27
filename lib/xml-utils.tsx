@@ -31,6 +31,9 @@ export function resourcesToXml(resources: Resource[]): string {
     if (resource.pages) {
       xmlLines.push(`      <pages>${resource.pages}</pages>`)
     }
+    if (resource.year) {
+      xmlLines.push(`      <year>${resource.year}</year>`)
+    }
     if (resource.localPath) {
       xmlLines.push(`      <localPath>${escapeXml(resource.localPath)}</localPath>`)
     }
@@ -73,6 +76,8 @@ export function xmlToResources(xmlString: string): Resource[] {
     const duration = getTextContent(el, 'duration') || undefined
     const pagesStr = getTextContent(el, 'pages')
     const pages = pagesStr ? parseInt(pagesStr, 10) : undefined
+    const yearStr = getTextContent(el, 'year')
+    const year = yearStr ? parseInt(yearStr, 10) : undefined
     const localPath = getTextContent(el, 'localPath') || undefined
 
     const tagElements = el.querySelectorAll('tags > tag')
@@ -95,6 +100,7 @@ export function xmlToResources(xmlString: string): Resource[] {
         author,
         duration,
         pages,
+        year,
         localPath,
         tags,
       })
@@ -189,7 +195,7 @@ export function detectResourceType(url: string): ResourceType {
 // Generate APA citation
 export function generateApaCitation(resource: Resource): string {
   const author = resource.author || 'Unknown Author'
-  const year = new Date(resource.dateAdded).getFullYear()
+  const year = resource.year || new Date(resource.dateAdded).getFullYear()
   const title = resource.title
   
   // Format based on type
