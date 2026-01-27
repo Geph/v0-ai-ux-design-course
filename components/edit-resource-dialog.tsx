@@ -38,6 +38,7 @@ export function EditResourceDialog({
   const [thumbnail, setThumbnail] = useState("")
   const [duration, setDuration] = useState("")
   const [pages, setPages] = useState("")
+  const [year, setYear] = useState("")
   const [url, setUrl] = useState("")
   const [type, setType] = useState<ResourceType>("link")
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -51,6 +52,7 @@ export function EditResourceDialog({
       setThumbnail(resource.thumbnail)
       setDuration(resource.duration || "")
       setPages(resource.pages?.toString() || "")
+      setYear(resource.year?.toString() || "")
       setUrl(resource.url)
       setType(resource.type)
       setShowDeleteConfirm(false)
@@ -83,12 +85,13 @@ export function EditResourceDialog({
     const updatedResource: Resource = {
       ...resource,
       title: title || "Untitled Resource",
-      author: author || undefined,
+      author: author ? author.slice(0, 160) : undefined,
       summary: summary || "No description provided.",
       tags,
       thumbnail: thumbnail || resource.thumbnail,
       duration: type === "video" && duration ? duration : undefined,
       pages: type === "pdf" && pages ? parseInt(pages, 10) : undefined,
+      year: year ? parseInt(year, 10) : undefined,
       url: url || resource.url,
       type,
     }
@@ -144,9 +147,11 @@ export function EditResourceDialog({
             <Input
               id="edit-author"
               value={author}
-              onChange={(e) => setAuthor(e.target.value)}
+              onChange={(e) => setAuthor(e.target.value.slice(0, 160))}
               placeholder="Author or organization name"
+              maxLength={160}
             />
+            <p className="text-xs text-muted-foreground text-right">{author.length}/160</p>
           </div>
 
           <div className="space-y-2">
@@ -193,20 +198,49 @@ export function EditResourceDialog({
           )}
 
           {type === "pdf" && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-pages">Page Count</Label>
+                <Input
+                  id="edit-pages"
+                  type="number"
+                  value={pages}
+                  onChange={(e) => setPages(e.target.value)}
+                  placeholder="e.g., 24"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-year">Year</Label>
+                <Input
+                  id="edit-year"
+                  type="number"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  placeholder="e.g., 2024"
+                  min={1900}
+                  max={2100}
+                />
+              </div>
+            </div>
+          )}
+
+          {type !== "pdf" && (
             <div className="space-y-2">
-              <Label htmlFor="edit-pages">Page Count</Label>
+              <Label htmlFor="edit-year-other">Year</Label>
               <Input
-                id="edit-pages"
+                id="edit-year-other"
                 type="number"
-                value={pages}
-                onChange={(e) => setPages(e.target.value)}
-                placeholder="e.g., 24"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+                placeholder="e.g., 2024"
+                min={1900}
+                max={2100}
               />
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="edit-summary">Summary</Label>
+            <Label htmlFor="edit-summary">Summary / Abstract</Label>
             <Textarea
               id="edit-summary"
               value={summary}

@@ -128,22 +128,26 @@ export function ResourceCard({ resource, onTagClick, onCiteClick, onEditClick }:
           </div>
         </div>
 
-        {/* Duration or Pages Badge */}
-        {(resource.duration || resource.pages) && (
-          <div className="absolute bottom-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 text-white text-xs font-medium">
-            {resource.duration ? (
-              <>
-                <Clock className="h-3 w-3" />
-                {resource.duration}
-              </>
-            ) : (
-              <>
-                <BookOpen className="h-3 w-3" />
-                {resource.pages} pages
-              </>
-            )}
-          </div>
-        )}
+        {/* Duration/Pages and Year Badges */}
+        <div className="absolute bottom-3 right-3 flex items-center gap-2">
+          {resource.year && (
+            <div className="px-2.5 py-1 rounded-full bg-black/70 text-white text-xs font-medium">
+              {resource.year}
+            </div>
+          )}
+          {resource.duration && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 text-white text-xs font-medium">
+              <Clock className="h-3 w-3" />
+              {resource.duration}
+            </div>
+          )}
+          {resource.pages && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 text-white text-xs font-medium">
+              <BookOpen className="h-3 w-3" />
+              {resource.pages} pages
+            </div>
+          )}
+        </div>
       </a>
 
       <CardContent className="p-4 pt-3">
