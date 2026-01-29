@@ -37,6 +37,9 @@ export function resourcesToXml(resources: Resource[]): string {
     if (resource.localPath) {
       xmlLines.push(`      <localPath>${escapeXml(resource.localPath)}</localPath>`)
     }
+    if (resource.rating) {
+      xmlLines.push(`      <rating>${resource.rating}</rating>`)
+    }
     xmlLines.push('      <tags>')
     for (const tag of resource.tags) {
       xmlLines.push(`        <tag>${escapeXml(tag)}</tag>`)
@@ -79,6 +82,8 @@ export function xmlToResources(xmlString: string): Resource[] {
     const yearStr = getTextContent(el, 'year')
     const year = yearStr ? parseInt(yearStr, 10) : undefined
     const localPath = getTextContent(el, 'localPath') || undefined
+    const ratingStr = getTextContent(el, 'rating')
+    const rating = ratingStr ? parseInt(ratingStr, 10) : undefined
 
     const tagElements = el.querySelectorAll('tags > tag')
     const tags: string[] = []
@@ -102,6 +107,7 @@ export function xmlToResources(xmlString: string): Resource[] {
         pages,
         year,
         localPath,
+        rating,
         tags,
       })
     }

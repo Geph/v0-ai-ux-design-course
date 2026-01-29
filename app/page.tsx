@@ -125,6 +125,12 @@ export default function ResourceLibrary() {
     setResources((prev) => prev.filter((r) => r.id !== id))
   }
 
+  const handleRatingChange = (resourceId: string, rating: number | undefined) => {
+    setResources((prev) =>
+      prev.map((r) => r.id === resourceId ? { ...r, rating } : r)
+    )
+  }
+
   const hasActiveFilters = searchQuery !== "" || selectedTags.length > 0 || selectedType !== "all"
 
   return (
@@ -183,6 +189,7 @@ export default function ResourceLibrary() {
           resources={filteredResources} 
           onTagClick={handleTagToggle}
           onEditClick={handleEditClick}
+          onRatingChange={handleRatingChange}
         />
       </main>
 

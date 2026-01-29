@@ -1,6 +1,6 @@
 "use client"
 
-import { FileText, Play, Link, Clock, BookOpen, User, Settings, ImageIcon } from "lucide-react"
+import { FileText, Play, Link, Clock, BookOpen, User, Settings, ImageIcon, Star } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,7 @@ interface ResourceCardProps {
   resource: Resource
   onTagClick: (tag: string) => void
   onEditClick: (resource: Resource) => void
+  onRatingChange?: (resourceId: string, rating: number | undefined) => void
 }
 
 const typeConfig: Record<ResourceType, { icon: typeof FileText; label: string; color: string; bgColor: string }> = {
@@ -48,12 +49,21 @@ const tagColors = [
   "bg-[oklch(0.70_0.18_145)]/10 text-[oklch(0.55_0.18_145)] hover:bg-[oklch(0.70_0.18_145)]/20",
 ]
 
-export function ResourceCard({ resource, onTagClick, onEditClick }: ResourceCardProps) {
+export function ResourceCard({ resource, onTagClick, onEditClick, onRatingChange }: ResourceCardProps) {
   const config = typeConfig[resource.type]
   const Icon = config.icon
 
   // Determine link URL - local PDFs go to local path, others use the URL
   const resourceUrl = resource.localPath || resource.url
+
+  const handleStarClick = (e: React.MouseEvent, star: number) => {
+    e.preventDefault()
+    e.stopPropagation()
+    // Toggle rating: if same rating, unset it; otherwise set new rating
+    if (onRatingChange) {
+      onRatingChange(resource.id, resource.rating === star ? undefined : star)
+    }
+  }
 
   return (
     <Card className="group overflow-hidden border-border bg-card hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
@@ -147,6 +157,27 @@ export function ResourceCard({ resource, onTagClick, onEditClick }: ResourceCard
         <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-4">
           {resource.summary}
         </p>
+
+        {/* Rating Stars */}
+        <div className="flex items-center gap-1 mb-4">
+          {[1, 2, 3, 4].map((star) => (
+            <button
+              key={star}
+              onClick={(e) => handleStarClick(e, star)}
+              className="transition-transform hover:scale-110 focus:outline-none focus:ring-1 focus:ring-primary rounded"
+              aria-label={`Rate ${star} stars`}
+            >
+              <Star
+                className={cn(
+                  "h-4 w-4 transition-colors",
+                  resource.rating && resource.rating >= star
+                    ? "fill-[oklch(0.75_0.18_55)] text-[oklch(0.75_0.18_55)]"
+                    : "text-muted-foreground hover:text-[oklch(0.75_0.18_55)]"
+                )}
+              />
+            </button>
+          ))}
+        </div>
 
         {/* Tags */}
         <div className="flex flex-wrap items-center gap-1.5">
