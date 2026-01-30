@@ -164,6 +164,32 @@ export function ResourceCard({ resource, onTagClick, onEditClick, onRatingChange
             </div>
           )}
         </div>
+
+        {/* Rating Stars - Bottom Left */}
+        <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/70 rounded-full px-2.5 py-1.5">
+          {[1, 2, 3, 4].map((star) => (
+            <button
+              key={star}
+              onClick={(e) => handleStarClick(e, star)}
+              className="transition-transform hover:scale-110 focus:outline-none focus:ring-1 focus:ring-primary rounded p-0.5"
+              aria-label={`Rate ${star} stars`}
+            >
+              <Star
+                className={cn(
+                  "h-3.5 w-3.5 transition-colors",
+                  resource.userRating && resource.userRating >= star
+                    ? "fill-[oklch(0.75_0.18_55)] text-[oklch(0.75_0.18_55)]"
+                    : "text-white/70 hover:text-[oklch(0.75_0.18_55)]"
+                )}
+              />
+            </button>
+          ))}
+          {resource.ratingCount && resource.ratingCount > 0 && (
+            <span className="text-xs text-white/80 ml-1">
+              {averageRating.toFixed(1)}
+            </span>
+          )}
+        </div>
       </a>
 
       <CardContent className="p-4 pt-3">
@@ -179,32 +205,6 @@ export function ResourceCard({ resource, onTagClick, onEditClick, onRatingChange
         <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3 mb-4">
           {resource.summary}
         </p>
-
-        {/* Rating Stars */}
-        <div className="flex items-center gap-1 mb-4">
-          {[1, 2, 3, 4].map((star) => (
-            <button
-              key={star}
-              onClick={(e) => handleStarClick(e, star)}
-              className="transition-transform hover:scale-110 focus:outline-none focus:ring-1 focus:ring-primary rounded"
-              aria-label={`Rate ${star} stars`}
-            >
-              <Star
-                className={cn(
-                  "h-4 w-4 transition-colors",
-                  resource.userRating && resource.userRating >= star
-                    ? "fill-[oklch(0.75_0.18_55)] text-[oklch(0.75_0.18_55)]"
-                    : "text-muted-foreground hover:text-[oklch(0.75_0.18_55)]"
-                )}
-              />
-            </button>
-          ))}
-          {resource.ratingCount && resource.ratingCount > 0 && (
-            <span className="text-xs text-muted-foreground ml-2">
-              {averageRating.toFixed(1)} ({resource.ratingCount})
-            </span>
-          )}
-        </div>
 
         {/* Tags */}
         <div className="flex flex-wrap items-center gap-1.5">
