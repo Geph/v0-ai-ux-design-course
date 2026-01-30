@@ -43,7 +43,7 @@ export function Header({ resources, onAddResource, onImport, popularTags }: Head
 
         {/* Action Buttons */}
         <div className="flex justify-center gap-3">
-          <AddResourceDialog onAddResource={onAddResource} popularTags={popularTags} />
+          <AddResourceDialog onAddResource={onAddResource} popularTags={popularTags} existingResources={resources} />
           <SettingsDialog resources={resources} onImport={onImport} />
         </div>
       </div>

@@ -21,9 +21,10 @@ const MAX_FILE_SIZE = 30 * 1024 * 1024 // 30MB in bytes
 interface AddResourceDialogProps {
   onAddResource: (resource: Resource) => void
   popularTags: string[]
+  existingResources?: Resource[]
 }
 
-export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDialogProps) {
+export function AddResourceDialog({ onAddResource, popularTags, existingResources = [] }: AddResourceDialogProps) {
   const [open, setOpen] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [url, setUrl] = useState("")
@@ -43,6 +44,7 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
   const [isScrapingUrl, setIsScrapingUrl] = useState(false)
   const [scrapedSuccessfully, setScrapedSuccessfully] = useState(false)
   const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false)
+  const [duplicateWarning, setDuplicateWarning] = useState<Resource | null>(null)
 
   const resetForm = () => {
     setUrl("")
@@ -62,6 +64,23 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
     setIsScrapingUrl(false)
     setScrapedSuccessfully(false)
     setIsGeneratingThumbnail(false)
+    setDuplicateWarning(null)
+  }
+
+  const checkForDuplicates = (checkTitle: string, checkUrl: string): Resource | null => {
+    if (!checkTitle && !checkUrl) return null
+    
+    const titleLower = checkTitle.toLowerCase().trim()
+    const urlNormalized = checkUrl.toLowerCase().trim()
+    
+    return existingResources.find(resource => {
+      const existingTitleLower = resource.title.toLowerCase().trim()
+      const existingUrlNormalized = resource.url.toLowerCase().trim()
+      
+      // Check for exact title match or exact URL match
+      return (titleLower && titleLower === existingTitleLower) || 
+             (urlNormalized && urlNormalized === existingUrlNormalized && urlNormalized !== "#")
+    }) || null
   }
 
   const handleAddTag = (tag: string) => {
@@ -244,22 +263,31 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Check for duplicates first
+    const resourceUrl = url || "#"
+    const duplicate = checkForDuplicates(title, resourceUrl)
+    
+    if (duplicate) {
+      setDuplicateWarning(duplicate)
+      return
+    }
+
     let localPath: string | undefined
-    let resourceUrl = url || "#"
+    let finalResourceUrl = resourceUrl
 
     // If a file was uploaded, create a blob URL (in a real app, this would upload to server)
     if (uploadedFile) {
       // Create a blob URL for the uploaded PDF
       // In a production app, you would upload this to a server/storage
       localPath = URL.createObjectURL(uploadedFile)
-      resourceUrl = localPath
+      finalResourceUrl = localPath
     }
 
     const resource: Resource = {
       id: generateId(),
       title: title || "Untitled Resource",
       type: detectedType,
-      url: resourceUrl,
+      url: finalResourceUrl,
       thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
       summary: summary || "No description provided.",
       tags: tags,
@@ -271,6 +299,38 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
       localPath: localPath,
     }
 
+    onAddResource(resource)
+    resetForm()
+    setOpen(false)
+  }
+
+  const handleProceedWithDuplicate = () => {
+    let localPath: string | undefined
+    let finalResourceUrl = url || "#"
+
+    // If a file was uploaded, create a blob URL
+    if (uploadedFile) {
+      localPath = URL.createObjectURL(uploadedFile)
+      finalResourceUrl = localPath
+    }
+
+    const resource: Resource = {
+      id: generateId(),
+      title: title || "Untitled Resource",
+      type: detectedType,
+      url: finalResourceUrl,
+      thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
+      summary: summary || "No description provided.",
+      tags: tags,
+      dateAdded: new Date().toISOString().split("T")[0],
+      author: author ? author.slice(0, 160) : undefined,
+      duration: detectedType === "video" && duration ? duration : undefined,
+      pages: detectedType === "pdf" && pages ? parseInt(pages, 10) : undefined,
+      year: year ? parseInt(year, 10) : undefined,
+      localPath: localPath,
+    }
+
+    setDuplicateWarning(null)
     onAddResource(resource)
     resetForm()
     setOpen(false)
@@ -689,6 +749,53 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
             </form>
           )}
         </div>
+
+        {/* Duplicate Warning Dialog */}
+        {duplicateWarning && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-card rounded-lg shadow-xl max-w-md mx-4 p-6 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="h-6 w-6 text-destructive" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Duplicate Resource Detected</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    A resource with the title "{duplicateWarning.title}" already exists in your library. 
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
+                <div className="font-medium text-foreground">Existing Resource:</div>
+                <div className="text-muted-foreground">{duplicateWarning.title}</div>
+                {duplicateWarning.url && duplicateWarning.url !== "#" && (
+                  <div className="text-xs text-muted-foreground truncate mt-2">{duplicateWarning.url}</div>
+                )}
+              </div>
+
+              <p className="text-sm text-muted-foreground">
+                Do you want to add this anyway? The ratings from both resources will be combined.
+              </p>
+
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setDuplicateWarning(null)}
+                  className="flex-1 bg-transparent"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleProceedWithDuplicate}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  Add Anyway
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )
