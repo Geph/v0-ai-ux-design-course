@@ -11,7 +11,7 @@ interface ResourceCardProps {
   resource: Resource
   onTagClick: (tag: string) => void
   onEditClick: (resource: Resource) => void
-  onRatingChange?: (resourceId: string, rating: number | undefined) => void
+  onRatingChange?: (resourceId: string, userRating: number | undefined, ratingSum: number, ratingCount: number) => void
 }
 
 const typeConfig: Record<ResourceType, { icon: typeof FileText; label: string; color: string; bgColor: string }> = {
@@ -56,12 +56,34 @@ export function ResourceCard({ resource, onTagClick, onEditClick, onRatingChange
   // Determine link URL - local PDFs go to local path, others use the URL
   const resourceUrl = resource.localPath || resource.url
 
+  // Calculate average rating
+  const averageRating = resource.ratingCount && resource.ratingCount > 0
+    ? resource.ratingSum! / resource.ratingCount
+    : 0
+
   const handleStarClick = (e: React.MouseEvent, star: number) => {
     e.preventDefault()
     e.stopPropagation()
-    // Toggle rating: if same rating, unset it; otherwise set new rating
+    // Toggle user rating: if same rating, unset it; otherwise set new rating
     if (onRatingChange) {
-      onRatingChange(resource.id, resource.rating === star ? undefined : star)
+      const newUserRating = resource.userRating === star ? undefined : star
+      // Calculate new cumulative rating
+      let newRatingSum = resource.ratingSum || 0
+      let newRatingCount = resource.ratingCount || 0
+
+      // Remove previous user rating from sum
+      if (resource.userRating) {
+        newRatingSum -= resource.userRating
+        newRatingCount -= 1
+      }
+
+      // Add new user rating to sum
+      if (newUserRating) {
+        newRatingSum += newUserRating
+        newRatingCount += 1
+      }
+
+      onRatingChange(resource.id, newUserRating, newRatingSum, newRatingCount)
     }
   }
 
@@ -170,13 +192,18 @@ export function ResourceCard({ resource, onTagClick, onEditClick, onRatingChange
               <Star
                 className={cn(
                   "h-4 w-4 transition-colors",
-                  resource.rating && resource.rating >= star
+                  resource.userRating && resource.userRating >= star
                     ? "fill-[oklch(0.75_0.18_55)] text-[oklch(0.75_0.18_55)]"
                     : "text-muted-foreground hover:text-[oklch(0.75_0.18_55)]"
                 )}
               />
             </button>
           ))}
+          {resource.ratingCount && resource.ratingCount > 0 && (
+            <span className="text-xs text-muted-foreground ml-2">
+              {averageRating.toFixed(1)} ({resource.ratingCount})
+            </span>
+          )}
         </div>
 
         {/* Tags */}

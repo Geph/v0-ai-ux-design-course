@@ -8,7 +8,7 @@ interface ResourceGalleryProps {
   resources: Resource[]
   onTagClick: (tag: string) => void
   onEditClick: (resource: Resource) => void
-  onRatingChange?: (resourceId: string, rating: number | undefined) => void
+  onRatingChange?: (resourceId: string, userRating: number | undefined, ratingSum: number, ratingCount: number) => void
 }
 
 export function ResourceGallery({ resources, onTagClick, onEditClick, onRatingChange }: ResourceGalleryProps) {

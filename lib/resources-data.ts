@@ -14,7 +14,9 @@ export interface Resource {
   pages?: number
   year?: number // Publication year
   localPath?: string // For locally uploaded PDFs
-  rating?: number // 1-4 star rating
+  ratingSum?: number // Sum of all user ratings
+  ratingCount?: number // Number of ratings
+  userRating?: number // Current user's rating (1-4)
 }
 
 export const resources: Resource[] = [

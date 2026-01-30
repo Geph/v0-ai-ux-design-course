@@ -125,9 +125,9 @@ export default function ResourceLibrary() {
     setResources((prev) => prev.filter((r) => r.id !== id))
   }
 
-  const handleRatingChange = (resourceId: string, rating: number | undefined) => {
+  const handleRatingChange = (resourceId: string, userRating: number | undefined, ratingSum: number, ratingCount: number) => {
     setResources((prev) =>
-      prev.map((r) => r.id === resourceId ? { ...r, rating } : r)
+      prev.map((r) => r.id === resourceId ? { ...r, userRating, ratingSum, ratingCount } : r)
     )
   }
 
