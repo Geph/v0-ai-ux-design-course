@@ -139,7 +139,11 @@ export function EditResourceDialog({
   }
 
   const generateThumbnail = async () => {
-    if (!url) return
+    console.log("[v0] generateThumbnail called, url:", url, "type:", type)
+    if (!url) {
+      console.log("[v0] No URL provided, returning")
+      return
+    }
     
     setIsGeneratingThumbnail(true)
     
@@ -147,10 +151,13 @@ export function EditResourceDialog({
       // For URL-based resources (not videos - those use scraped thumbnails)
       if (type !== "video") {
         const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
+        console.log("[v0] Generated thumbnail URL:", thumbnailUrl)
         setThumbnail(thumbnailUrl)
+      } else {
+        console.log("[v0] Type is video, skipping screenshot generation")
       }
     } catch (error) {
-      console.error("Failed to generate thumbnail:", error)
+      console.error("[v0] Failed to generate thumbnail:", error)
     } finally {
       setIsGeneratingThumbnail(false)
     }
