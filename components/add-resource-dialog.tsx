@@ -595,21 +595,6 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
                 />
               </div>
 
-              {detectedType !== "pdf" && (
-                <div className="space-y-2">
-                  <Label htmlFor="year-other">Year</Label>
-                  <Input
-                    id="year-other"
-                    type="number"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                    placeholder="e.g., 2024"
-                    min={1900}
-                    max={2100}
-                  />
-                </div>
-              )}
-
               <div className="space-y-2">
                 <Label htmlFor="summary">Summary / Abstract</Label>
                 <Textarea

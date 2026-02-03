@@ -107,17 +107,47 @@ export async function POST(request: NextRequest) {
               
               // Try to extract video description for summary
               // YouTube embeds description in JSON data on the page
-              const descriptionMatch = html.match(/"shortDescription":"([^"]*)"/) ||
-                                       html.match(/"description":{"simpleText":"([^"]*)"/)
+              // Try multiple extraction methods as YouTube changes formats
+              let descriptionMatch = html.match(/"shortDescription":"([^"\\]*(\\.[^"\\]*)*)"/);
+              
               if (descriptionMatch) {
                 description = descriptionMatch[1]
                   .replace(/\\n/g, " ")
+                  .replace(/\\r/g, "")
                   .replace(/\\"/g, '"')
+                  .replace(/\\\//g, "/")
                   .replace(/\s+/g, " ")
                   .trim()
-                  .slice(0, 400)
-                if (description.length === 400) {
+                  .slice(0, 500);
+                if (description.length === 500) {
                   description += "..."
+                }
+              } else {
+                // Try alternative format for description
+                descriptionMatch = html.match(/"description":{"simpleText":"([^"]*)"}/)
+                if (descriptionMatch) {
+                  description = descriptionMatch[1]
+                    .replace(/\\n/g, " ")
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .slice(0, 500)
+                  if (description.length === 500) {
+                    description += "..."
+                  }
+                }
+              }
+              
+              // If still no description, try to get it from the meta description tag
+              if (!description) {
+                const metaMatch = html.match(/<meta\s+name="description"\s+content="([^"]*)"/)
+                if (metaMatch) {
+                  description = metaMatch[1]
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .slice(0, 500)
+                  if (description.length === 500) {
+                    description += "..."
+                  }
                 }
               }
               
