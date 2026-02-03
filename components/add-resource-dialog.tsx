@@ -733,6 +733,27 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
                   )}
                 </Button>
               )}
+              {url && detectedType === 'video' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => scrapeUrl(url)}
+                  disabled={isScrapingUrl}
+                  className="bg-transparent"
+                >
+                  {isScrapingUrl ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-4 w-4 mr-2" />
+                      Regenerate Video Thumbnail
+                    </>
+                  )}
+                </Button>
+              )}
               {(uploadedFile?.type === 'application/pdf' || detectedType === 'pdf') && (
                 <Button
                   type="button"

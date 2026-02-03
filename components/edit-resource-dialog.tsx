@@ -117,6 +117,27 @@ export function EditResourceDialog({
     }
   }
 
+  const scrapeUrl = async (urlToScrape: string) => {
+    setIsGeneratingThumbnail(true)
+    
+    try {
+      const response = await fetch("/api/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: urlToScrape }),
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.thumbnail) setThumbnail(data.thumbnail)
+      }
+    } catch (error) {
+      console.error("Failed to scrape thumbnail:", error)
+    } finally {
+      setIsGeneratingThumbnail(false)
+    }
+  }
+
   const generateThumbnail = async () => {
     if (!url) return
     
@@ -334,6 +355,27 @@ export function EditResourceDialog({
                     <>
                       <Camera className="h-4 w-4 mr-2" />
                       Generate from Screenshot
+                    </>
+                  )}
+                </Button>
+              )}
+              {url && type === 'video' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => scrapeUrl(url)}
+                  disabled={isGeneratingThumbnail}
+                  className="bg-transparent"
+                >
+                  {isGeneratingThumbnail ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-4 w-4 mr-2" />
+                      Regenerate Video Thumbnail
                     </>
                   )}
                 </Button>
