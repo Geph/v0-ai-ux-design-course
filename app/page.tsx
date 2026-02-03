@@ -286,6 +286,9 @@ export default function ResourceLibrary() {
             <p>
               a course at the University of Illinois at Urbana-Champaign
             </p>
+            <p className="mt-2 text-[10px] opacity-60">
+              v0.1.0
+            </p>
           </div>
         </div>
       </footer>
