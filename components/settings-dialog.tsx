@@ -81,23 +81,29 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
   }
 
   const handleExport = async () => {
+    console.log("[v0] handleExport called with", resources.length, "resources")
     await exportXmlFile(resources, `ux-ai-resources-${new Date().toISOString().split("T")[0]}.xml`)
   }
 
   const handleSaveAsDefault = async () => {
+    console.log("[v0] handleSaveAsDefault called with", resources.length, "resources")
     if (!confirm("This will download resources.xml which you should place in /public/out/ for deployment. Continue?")) {
       return
     }
 
     try {
+      console.log("[v0] Sending fetch request to /api/save-default-resources")
       const response = await fetch("/api/save-default-resources", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ resources }),
       })
       
+      console.log("[v0] Response status:", response.status, response.ok)
+      
       if (response.ok) {
         const blob = await response.blob()
+        console.log("[v0] Got blob, size:", blob.size)
         const url = URL.createObjectURL(blob)
         
         const a = document.createElement("a")
@@ -117,7 +123,7 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
         alert("Failed to save default resources")
       }
     } catch (error) {
-      console.error("Failed to save default resources:", error)
+      console.error("[v0] Failed to save default resources:", error)
       alert("Failed to save default resources")
     }
   }
