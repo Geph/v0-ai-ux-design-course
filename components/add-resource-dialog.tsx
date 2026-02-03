@@ -83,10 +83,25 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
     }) || null
   }
 
-  const handleAddTag = (tag: string) => {
+  const formatTag = (tag: string): string => {
     const trimmed = tag.trim()
-    if (trimmed && !tags.includes(trimmed)) {
-      setTags([...tags, trimmed])
+    
+    // If the tag is all uppercase (like "RAG" or "AI"), keep it as-is
+    if (trimmed === trimmed.toUpperCase() && trimmed.length > 1) {
+      return trimmed
+    }
+    
+    // Otherwise, convert to title case (capitalize first letter of each word)
+    return trimmed
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+  }
+
+  const handleAddTag = (tag: string) => {
+    const formatted = formatTag(tag)
+    if (formatted && !tags.includes(formatted)) {
+      setTags([...tags, formatted])
     }
     setNewTag("")
   }
@@ -126,8 +141,9 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
           setTags((prevTags) => {
             const newTags = [...prevTags]
             for (const tag of data.suggestedTags) {
-              if (!newTags.includes(tag)) {
-                newTags.push(tag)
+              const formatted = formatTag(tag)
+              if (!newTags.includes(formatted)) {
+                newTags.push(formatted)
               }
             }
             return newTags

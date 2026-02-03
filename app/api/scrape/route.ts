@@ -133,10 +133,8 @@ export async function POST(request: NextRequest) {
             // Duration/description/year extraction failed, continue without it
           }
           
-          // Build a better summary from description or fallback
-          const summary = description && description.length > 20 
-            ? description 
-            : `Video by ${data.author_name || "Unknown"} on YouTube.`
+          // Use description as summary, or leave empty if not found (let user fill in manually)
+          const summary = description || ""
           
           // Include description in tag extraction for better suggestions
           const fullText = `${data.title || ""} ${data.author_name || ""} ${description || ""} youtube video tutorial`

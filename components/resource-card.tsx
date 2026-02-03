@@ -1,6 +1,6 @@
 "use client"
 
-import { FileText, Play, Link, Clock, BookOpen, User, Settings, ImageIcon, Star } from "lucide-react"
+import { FileText, Play, Link, User, Settings, ImageIcon, Star } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -144,26 +144,14 @@ export function ResourceCard({ resource, onTagClick, onEditClick, onRatingChange
           </Button>
         </div>
 
-        {/* Duration/Pages and Year Badges */}
-        <div className="absolute bottom-3 right-3 flex items-center gap-2">
-          {resource.year && (
+        {/* Year Badge */}
+        {resource.year && (
+          <div className="absolute bottom-3 right-3">
             <div className="px-2.5 py-1 rounded-full bg-black/70 text-white text-xs font-medium">
               {resource.year}
             </div>
-          )}
-          {resource.duration && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 text-white text-xs font-medium">
-              <Clock className="h-3 w-3" />
-              {resource.duration}
-            </div>
-          )}
-          {resource.pages && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/70 text-white text-xs font-medium">
-              <BookOpen className="h-3 w-3" />
-              {resource.pages} pages
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Rating Stars - Bottom Left */}
         <div className="absolute bottom-3 left-3 flex items-center gap-1 bg-black/70 rounded-full px-2.5 py-1.5">
