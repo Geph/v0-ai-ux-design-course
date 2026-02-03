@@ -225,13 +225,24 @@ export async function POST(request: NextRequest) {
     }
 
     // For other URLs, fetch and parse the HTML
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; UXAILibraryBot/1.0)",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      },
-      next: { revalidate: 3600 },
-    })
+    let response
+    try {
+      response = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; UXAILibraryBot/1.0)",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+        next: { revalidate: 3600 },
+      })
+    } catch (fetchError) {
+      // Fetch failed (network error, CORS, etc.)
+      // Return empty data so user can fill in manually
+      return NextResponse.json({ 
+        title: "",
+        summary: "",
+        suggestedTags: [],
+      }, { status: 200 })
+    }
 
     if (!response.ok) {
       // Site blocked access (403), requires login, or other error
@@ -240,7 +251,7 @@ export async function POST(request: NextRequest) {
         title: "",
         summary: "",
         suggestedTags: [],
-      }, { status: 200 }) // Return 200 with empty data so UI can continue
+      }, { status: 200 })
     }
 
     const contentType = response.headers.get("content-type") || ""
