@@ -81,51 +81,17 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
   }
 
   const handleExport = async () => {
-    console.log("[v0] handleExport called with", resources.length, "resources")
     await exportXmlFile(resources, `ux-ai-resources-${new Date().toISOString().split("T")[0]}.xml`)
   }
 
   const handleSaveAsDefault = async () => {
-    console.log("[v0] handleSaveAsDefault called with", resources.length, "resources")
     if (!confirm("This will download resources.xml which you should place in /public/out/ for deployment. Continue?")) {
       return
     }
 
-    try {
-      console.log("[v0] Sending fetch request to /api/save-default-resources")
-      const response = await fetch("/api/save-default-resources", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resources }),
-      })
-      
-      console.log("[v0] Response status:", response.status, response.ok)
-      
-      if (response.ok) {
-        const blob = await response.blob()
-        console.log("[v0] Got blob, size:", blob.size)
-        const url = URL.createObjectURL(blob)
-        
-        const a = document.createElement("a")
-        a.href = url
-        a.download = "resources.xml"
-        a.style.display = "none"
-        document.body.appendChild(a)
-        a.click()
-        
-        setTimeout(() => {
-          document.body.removeChild(a)
-          URL.revokeObjectURL(url)
-        }, 100)
-        
-        alert("resources.xml downloaded! Place it in /public/out/ folder for deployment.")
-      } else {
-        alert("Failed to save default resources")
-      }
-    } catch (error) {
-      console.error("[v0] Failed to save default resources:", error)
-      alert("Failed to save default resources")
-    }
+    // Generate XML and download client-side (no API needed)
+    await exportXmlFile(resources, "resources.xml")
+    alert("resources.xml downloaded! Place it in /public/out/ folder for deployment.")
   }
 
   const handleImportClick = () => {
@@ -134,21 +100,15 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) {
-      console.log("[v0] No file selected")
-      return
-    }
+    if (!file) return
 
     try {
-      console.log("[v0] Importing file:", file.name)
       const text = await file.text()
-      console.log("[v0] File text length:", text.length)
       const importedResources = xmlToResources(text)
-      console.log("[v0] Parsed resources count:", importedResources.length)
       onImport(importedResources)
       alert(`Successfully imported ${importedResources.length} resources!`)
     } catch (err) {
-      console.error("[v0] Failed to import XML:", err)
+      console.error("Failed to import XML:", err)
       alert("Failed to import XML file. Please check the format.")
     }
 
@@ -189,33 +149,8 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Theme Toggle */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Theme Mode</Label>
-            <div className="flex gap-2">
-              <Button
-                variant={isDark ? "outline" : "default"}
-                size="sm"
-                onClick={() => !isDark && handleThemeToggle()}
-                className="flex-1 gap-2"
-              >
-                <Sun className="h-4 w-4" />
-                Light
-              </Button>
-              <Button
-                variant={isDark ? "default" : "outline"}
-                size="sm"
-                onClick={() => isDark && handleThemeToggle()}
-                className="flex-1 gap-2"
-              >
-                <Moon className="h-4 w-4" />
-                Dark
-              </Button>
-            </div>
-          </div>
-
           {/* Color Palette Selection */}
-          <div className="space-y-3 border-t pt-4">
+          <div className="space-y-3">
             <Label className="text-sm font-medium">Color Palette</Label>
             <div className="grid grid-cols-2 gap-2">
               {colorPalettes.map((palette) => (
@@ -226,36 +161,6 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
                   onClick={() => handlePaletteChange(palette.id)}
                 />
               ))}
-            </div>
-          </div>
-
-          {/* Popular Tags */}
-          <div className="space-y-3 border-t pt-4">
-            <Label className="text-sm font-medium">Popular Tags</Label>
-            <div className="flex flex-wrap gap-2">
-              {customTags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="gap-1">
-                  {tag}
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className="ml-1 hover:text-destructive"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Add a tag..."
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
-                className="flex-1"
-              />
-              <Button onClick={handleAddTag} size="sm">
-                Add
-              </Button>
             </div>
           </div>
 
