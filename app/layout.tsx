@@ -8,7 +8,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'User Experience Design with AI: Knowledge Library',
+  title: 'UXD+AI',
   description: 'A comprehensive knowledge library for the User Experience Design with AI studio course',
   generator: 'v0.app',
   icons: {

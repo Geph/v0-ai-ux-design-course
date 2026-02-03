@@ -4,11 +4,15 @@ import React, { useRef, useEffect, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Settings, Download, Upload, Check, Sun, Moon } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Settings, Download, Upload, Check, Sun, Moon, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { exportXmlFile, xmlToResources } from "@/lib/xml-utils"
 import { colorPalettes, applyPalette, PALETTE_STORAGE_KEY, THEME_STORAGE_KEY, type ColorPalette } from "@/lib/color-palettes"
 import type { Resource } from "@/lib/resources-data"
+import { Badge } from "@/components/ui/badge"
+
+const POPULAR_TAGS_STORAGE_KEY = "ux-ai-popular-tags"
 
 interface SettingsDialogProps {
   resources: Resource[]
@@ -19,18 +23,24 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
   const [open, setOpen] = useState(false)
   const [selectedPalette, setSelectedPalette] = useState<string>("vibrant-blue")
   const [isDark, setIsDark] = useState(false)
+  const [customTags, setCustomTags] = useState<string[]>([])
+  const [newTag, setNewTag] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load saved preferences on mount
   useEffect(() => {
     const savedPalette = localStorage.getItem(PALETTE_STORAGE_KEY)
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
+    const savedTags = localStorage.getItem(POPULAR_TAGS_STORAGE_KEY)
     
     if (savedPalette) {
       setSelectedPalette(savedPalette)
     }
     if (savedTheme) {
       setIsDark(savedTheme === "dark")
+    }
+    if (savedTags) {
+      setCustomTags(JSON.parse(savedTags))
     }
     
     // Apply saved palette
@@ -96,6 +106,21 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
     }
   }
 
+  const handleAddTag = () => {
+    if (newTag.trim() && !customTags.includes(newTag.trim())) {
+      const updated = [...customTags, newTag.trim()]
+      setCustomTags(updated)
+      localStorage.setItem(POPULAR_TAGS_STORAGE_KEY, JSON.stringify(updated))
+      setNewTag("")
+    }
+  }
+
+  const handleRemoveTag = (tag: string) => {
+    const updated = customTags.filter(t => t !== tag)
+    setCustomTags(updated)
+    localStorage.setItem(POPULAR_TAGS_STORAGE_KEY, JSON.stringify(updated))
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -151,6 +176,49 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
                 />
               ))}
             </div>
+          </div>
+
+          {/* Popular Tags Management */}
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-sm font-medium">Popular Tags</Label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Add a new tag"
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    handleAddTag()
+                  }
+                }}
+                className="text-sm"
+              />
+              <Button 
+                size="sm"
+                onClick={handleAddTag}
+                className="px-3"
+              >
+                Add
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {customTags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="gap-1">
+                  {tag}
+                  <button
+                    onClick={() => handleRemoveTag(tag)}
+                    className="ml-1 hover:text-destructive transition-colors"
+                    aria-label={`Remove ${tag}`}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Customize the list of popular tags that appear in the tag filter.
+            </p>
           </div>
 
           {/* Import/Export Section */}
