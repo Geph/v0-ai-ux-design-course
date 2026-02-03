@@ -138,35 +138,6 @@ export function EditResourceDialog({
     }
   }
 
-  const generateThumbnail = async () => {
-    if (!url || url.startsWith('blob:')) {
-      alert("Screenshot feature only works with web URLs, not uploaded files. Please use Upload or Generic thumbnail options instead.")
-      return
-    }
-    
-    setIsGeneratingThumbnail(true)
-    
-    try {
-      const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
-      setThumbnail(thumbnailUrl)
-      
-      // Test if the image loads successfully
-      const testImg = new Image()
-      testImg.crossOrigin = "anonymous"
-      testImg.onerror = () => {
-        alert("Screenshot service failed. Please use Upload or Generic URL thumbnail instead.")
-        setThumbnail("/url-thumbnail.jpg")
-      }
-      testImg.src = thumbnailUrl
-    } catch (error) {
-      console.error("Failed to generate thumbnail:", error)
-      alert("Screenshot failed. Using generic thumbnail instead.")
-      setThumbnail("/url-thumbnail.jpg")
-    } finally {
-      setIsGeneratingThumbnail(false)
-    }
-  }
-
   const useGenericPdfThumbnail = () => {
     setThumbnail("/pdf-thumbnail.jpg")
   }
@@ -454,19 +425,19 @@ export function EditResourceDialog({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={generateThumbnail}
+                  onClick={() => scrapeUrl(url)}
                   disabled={isGeneratingThumbnail}
                   className="bg-transparent"
                 >
                   {isGeneratingThumbnail ? (
                     <>
                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      Generating...
+                      Loading...
                     </>
                   ) : (
                     <>
                       <Camera className="h-3 w-3 mr-1" />
-                      Screenshot
+                      Fetch Thumbnail
                     </>
                   )}
                 </Button>
