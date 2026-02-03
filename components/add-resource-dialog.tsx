@@ -179,16 +179,27 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
   }
 
   const generateThumbnail = async () => {
-    if (!url) return
+    if (!url && !uploadedFile) return
     
     setIsGeneratingThumbnail(true)
     
     try {
-      // For PDFs, use a static thumbnail with PDF icon
-      if (type === "pdf") {
+      // For uploaded files (images), create a preview from the file
+      if (uploadedFile && uploadedFile.type.startsWith('image/')) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          if (e.target?.result) {
+            setThumbnail(e.target.result as string)
+          }
+        }
+        reader.readAsDataURL(uploadedFile)
+      }
+      // For PDFs (uploaded or URL), use a static thumbnail with PDF icon
+      else if (detectedType === "pdf") {
         setThumbnail("/pdf-thumbnail.jpg")
-      } else {
-        // For other types, use screenshot service
+      }
+      // For URL-based resources, use screenshot service
+      else if (url && !url.startsWith('file://')) {
         const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
         setThumbnail(thumbnailUrl)
       }
@@ -213,7 +224,7 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
       setUploadedFile(file)
       setDetectedType("pdf")
       setTitle(file.name.replace(".pdf", ""))
-      setUrl("") // Clear URL since we're using a file
+      setUrl(`file://${file.name}`) // Set placeholder URL for uploaded file
       setShowForm(true)
     } else if (imageTypes.includes(file.type)) {
       setUploadedFile(file)
@@ -221,7 +232,7 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
       // Remove file extension from title
       const nameWithoutExt = file.name.replace(/\.(png|jpg|jpeg|gif|webp|svg)$/i, "")
       setTitle(nameWithoutExt)
-      setUrl("")
+      setUrl(`file://${file.name}`) // Set placeholder URL for uploaded file
       setShowForm(true)
     } else {
       setFileError("Supported files: PDF and images (PNG, JPG, GIF, WebP, SVG). For videos and links, please use a URL.")
