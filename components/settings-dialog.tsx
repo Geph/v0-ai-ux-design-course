@@ -180,37 +180,70 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
           <div className="space-y-3">
             <Label className="text-sm font-medium">Theme Mode</Label>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleImportClick} 
-                className="flex-1 gap-2 bg-transparent"
+              <Button
+                variant={isDark ? "outline" : "default"}
+                size="sm"
+                onClick={() => !isDark && handleThemeToggle()}
+                className="flex-1 gap-2"
               >
-                <Upload className="h-4 w-4" />
-                Import XML
+                <Sun className="h-4 w-4" />
+                Light
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleExport} 
-                className="flex-1 gap-2 bg-transparent"
+              <Button
+                variant={isDark ? "default" : "outline"}
+                size="sm"
+                onClick={() => isDark && handleThemeToggle()}
+                className="flex-1 gap-2"
               >
-                <Download className="h-4 w-4" />
-                Export XML
+                <Moon className="h-4 w-4" />
+                Dark
               </Button>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleSaveAsDefault} 
-              className="w-full gap-2 bg-transparent"
-            >
-              <Check className="h-4 w-4" />
-              Save as Default Resources
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              Import or export your resource library. Save as default to use these resources when deployed.
-            </p>
+          </div>
+
+          {/* Color Palette Selection */}
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-sm font-medium">Color Palette</Label>
+            <div className="grid grid-cols-2 gap-2">
+              {colorPalettes.map((palette) => (
+                <PaletteOption
+                  key={palette.id}
+                  palette={palette}
+                  isSelected={selectedPalette === palette.id}
+                  onClick={() => handlePaletteChange(palette.id)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Popular Tags */}
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-sm font-medium">Popular Tags</Label>
+            <div className="flex flex-wrap gap-2">
+              {customTags.map((tag) => (
+                <Badge key={tag} variant="secondary" className="gap-1">
+                  {tag}
+                  <button
+                    onClick={() => handleRemoveTag(tag)}
+                    className="ml-1 hover:text-destructive"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Add a tag..."
+                value={newTag}
+                onChange={(e) => setNewTag(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
+                className="flex-1"
+              />
+              <Button onClick={handleAddTag} size="sm">
+                Add
+              </Button>
+            </div>
           </div>
 
           {/* Import/Export Section */}
@@ -244,8 +277,17 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
                 Export XML
               </Button>
             </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSaveAsDefault} 
+              className="w-full gap-2 bg-transparent"
+            >
+              <Check className="h-4 w-4" />
+              Save as Default Resources
+            </Button>
             <p className="text-xs text-muted-foreground">
-              Import or export your resource library as an XML file.
+              Import or export your resource library. Save as default to use these resources when deployed.
             </p>
           </div>
         </div>
