@@ -37,15 +37,12 @@ export function Header({ resources, onAddResource, onImport, popularTags }: Head
         </h1>
 
         {/* Subtitle */}
-        <p className="text-base md:text-lg text-amber-100 text-center max-w-2xl mx-auto mb-6 text-pretty">
+        <p className="text-base md:text-lg text-amber-100 text-center max-w-2xl mx-auto mb-8 text-pretty">
           Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence.
         </p>
 
-        {/* Action Buttons */}
-        <div className="flex justify-center gap-3">
-          <AddResourceDialog onAddResource={onAddResource} popularTags={popularTags} existingResources={resources} />
-          <SettingsDialog resources={resources} onImport={onImport} />
-        </div>
+        {/* Action Buttons - Placeholder, moved to search section */}
+        {/* Settings button moved below search in main page */}
       </div>
     </header>
   )
