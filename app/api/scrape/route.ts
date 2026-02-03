@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 
-export const runtime = "nodejs"
-export const dynamic = "force-dynamic"
+export const runtime = "edge"
 
 // Common keywords for tag suggestions based on the course's popular tags
 const TAG_KEYWORDS: Record<string, string[]> = {

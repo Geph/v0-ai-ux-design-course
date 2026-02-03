@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
 import type { Resource } from "@/lib/resources-data"
 
-export const runtime = "nodejs"
-export const dynamic = "force-dynamic"
+export const runtime = "edge"
 
 function resourcesToXml(resources: Resource[]): string {
   const escapeXml = (str: string) => {
