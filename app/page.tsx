@@ -14,6 +14,13 @@ import { SlidersHorizontal, X, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const STORAGE_KEY = "ux-ai-resources"
+const APP_NAME_STORAGE_KEY = "ux-ai-app-name"
+const APP_DESCRIPTION_STORAGE_KEY = "ux-ai-app-description"
+const APP_FOOTER_STORAGE_KEY = "ux-ai-app-footer"
+
+const DEFAULT_APP_NAME = "User Experience Design with AI"
+const DEFAULT_APP_DESCRIPTION = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence."
+const DEFAULT_FOOTER_TEXT = "a course at the University of Illinois at Urbana-Champaign"
 
 export default function ResourceLibrary() {
   const [resources, setResources] = useState<Resource[]>(initialResources)
@@ -23,11 +30,24 @@ export default function ResourceLibrary() {
   const [editResource, setEditResource] = useState<Resource | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [showPopularTags, setShowPopularTags] = useState(true)
+  const [appName, setAppName] = useState(DEFAULT_APP_NAME)
+  const [appDescription, setAppDescription] = useState(DEFAULT_APP_DESCRIPTION)
+  const [footerText, setFooterText] = useState(DEFAULT_FOOTER_TEXT)
 
   // Load resources from localStorage on mount
   useEffect(() => {
     const loadResources = async () => {
       let resourcesToUse = initialResources
+      
+      // Try loading saved app metadata
+      const savedName = localStorage.getItem(APP_NAME_STORAGE_KEY)
+      if (savedName) setAppName(savedName)
+      
+      const savedDescription = localStorage.getItem(APP_DESCRIPTION_STORAGE_KEY)
+      if (savedDescription) setAppDescription(savedDescription)
+      
+      const savedFooter = localStorage.getItem(APP_FOOTER_STORAGE_KEY)
+      if (savedFooter) setFooterText(savedFooter)
       
       // Try to load from stored localStorage first
       const stored = localStorage.getItem(STORAGE_KEY)
@@ -163,8 +183,10 @@ export default function ResourceLibrary() {
       <Header 
         resources={resources} 
         onAddResource={handleAddResource} 
-        onImport={handleImport}
+        onImport={handleImport} 
         popularTags={popularTags}
+        appName={appName}
+        appDescription={appDescription}
       />
 
       {/* Search and Filters Section */}
@@ -175,7 +197,16 @@ export default function ResourceLibrary() {
             <div className="flex-1 max-w-2xl">
               <SearchBar value={searchQuery} onChange={setSearchQuery} />
             </div>
-            <SettingsDialog resources={resources} onImport={handleImport} />
+      <SettingsDialog 
+        resources={resources} 
+        onImport={handleImport}
+        onAppNameChange={setAppName}
+        onAppDescriptionChange={setAppDescription}
+        onFooterTextChange={setFooterText}
+        currentAppName={appName}
+        currentAppDescription={appDescription}
+        currentFooterText={footerText}
+      />
           </div>
 
           {/* Popular Tags */}
@@ -294,12 +325,12 @@ export default function ResourceLibrary() {
                 Informatics 490: User Experience Design with AI
               </a>
             </p>
-            <p>
-              a course at the University of Illinois at Urbana-Champaign
-            </p>
-            <p className="mt-2 text-[10px] opacity-60">
-              v0.1.0
-            </p>
+              <p>
+                {footerText}
+              </p>
+              <p className="mt-2 text-[10px] opacity-60">
+                v0.2.0
+              </p>
           </div>
         </div>
       </footer>
