@@ -84,6 +84,44 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
     exportXmlFile(resources, `ux-ai-resources-${new Date().toISOString().split("T")[0]}.xml`)
   }
 
+  const handleSaveAsDefault = async () => {
+    if (!confirm("This will download resources.xml which you should place in /public/out/ for deployment. Continue?")) {
+      return
+    }
+
+    try {
+      const response = await fetch("/api/save-default-resources", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resources }),
+      })
+      
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        
+        const a = document.createElement("a")
+        a.href = url
+        a.download = "resources.xml"
+        a.style.display = "none"
+        document.body.appendChild(a)
+        a.click()
+        
+        setTimeout(() => {
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+        }, 100)
+        
+        alert("resources.xml downloaded! Place it in /public/out/ folder for deployment.")
+      } else {
+        alert("Failed to save default resources")
+      }
+    } catch (error) {
+      console.error("Failed to save default resources:", error)
+      alert("Failed to save default resources")
+    }
+  }
+
   const handleImportClick = () => {
     fileInputRef.current?.click()
   }
@@ -142,82 +180,36 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
           <div className="space-y-3">
             <Label className="text-sm font-medium">Theme Mode</Label>
             <div className="flex gap-2">
-              <Button
-                variant={!isDark ? "default" : "outline"}
-                size="sm"
-                onClick={() => isDark && handleThemeToggle()}
-                className={cn("flex-1 gap-2", isDark && "bg-transparent")}
-              >
-                <Sun className="h-4 w-4" />
-                Light
-              </Button>
-              <Button
-                variant={isDark ? "default" : "outline"}
-                size="sm"
-                onClick={() => !isDark && handleThemeToggle()}
-                className={cn("flex-1 gap-2", !isDark && "bg-transparent")}
-              >
-                <Moon className="h-4 w-4" />
-                Dark
-              </Button>
-            </div>
-          </div>
-
-          {/* Color Palette Selection */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Color Style</Label>
-            <div className="grid grid-cols-2 gap-3">
-              {colorPalettes.map((palette) => (
-                <PaletteOption
-                  key={palette.id}
-                  palette={palette}
-                  isSelected={selectedPalette === palette.id}
-                  onClick={() => handlePaletteChange(palette.id)}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Popular Tags Management */}
-          <div className="space-y-3 border-t pt-4">
-            <Label className="text-sm font-medium">Popular Tags</Label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Add a new tag"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyPress={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault()
-                    handleAddTag()
-                  }
-                }}
-                className="text-sm"
-              />
               <Button 
-                size="sm"
-                onClick={handleAddTag}
-                className="px-3"
+                variant="outline" 
+                size="sm" 
+                onClick={handleImportClick} 
+                className="flex-1 gap-2 bg-transparent"
               >
-                Add
+                <Upload className="h-4 w-4" />
+                Import XML
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleExport} 
+                className="flex-1 gap-2 bg-transparent"
+              >
+                <Download className="h-4 w-4" />
+                Export XML
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {customTags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="gap-1">
-                  {tag}
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className="ml-1 hover:text-destructive transition-colors"
-                    aria-label={`Remove ${tag}`}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleSaveAsDefault} 
+              className="w-full gap-2 bg-transparent"
+            >
+              <Check className="h-4 w-4" />
+              Save as Default Resources
+            </Button>
             <p className="text-xs text-muted-foreground">
-              Customize the list of popular tags that appear in the tag filter.
+              Import or export your resource library. Save as default to use these resources when deployed.
             </p>
           </div>
 
