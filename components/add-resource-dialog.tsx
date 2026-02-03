@@ -128,16 +128,10 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
       
       if (response.ok) {
         const data = await response.json()
-        console.log("[v0] Scrape response data:", data)
         
         if (data.title) setTitle(data.title)
         if (data.author) setAuthor(data.author)
-        if (data.summary) {
-          console.log("[v0] Setting summary:", data.summary)
-          setSummary(data.summary)
-        } else {
-          console.log("[v0] No summary in response")
-        }
+        if (data.summary) setSummary(data.summary)
         if (data.thumbnail) setThumbnail(data.thumbnail)
         if (data.suggestedTags && data.suggestedTags.length > 0) {
           setTags((prevTags) => {
