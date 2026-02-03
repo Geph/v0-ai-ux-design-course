@@ -154,7 +154,7 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
         setScrapedSuccessfully(true)
       }
     } catch (error) {
-      console.error("Failed to scrape URL:", error)
+      // Silently fail - some sites block scraping, user can fill in manually
     } finally {
       setIsScrapingUrl(false)
     }
