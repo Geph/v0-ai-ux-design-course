@@ -350,7 +350,7 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
       <DialogTrigger asChild>
         <Button 
           size="lg"
-          className="gap-3 px-8 py-6 text-lg font-semibold bg-slate-900 hover:bg-slate-800 text-amber-50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl"
+          className="gap-3 px-8 py-6 text-lg font-semibold bg-gradient-to-r from-primary via-[oklch(0.60_0.20_330)] to-accent hover:opacity-90 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 rounded-xl"
         >
           <Plus className="h-6 w-6" />
           Add Resource
