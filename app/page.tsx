@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react"
 import { Header } from "@/components/header"
 import { SearchBar } from "@/components/search-bar"
+import { SettingsDialog } from "@/components/settings-dialog"
 import { TagFilter } from "@/components/tag-filter"
 import { ResourceGallery } from "@/components/resource-gallery"
 import { EditResourceDialog } from "@/components/edit-resource-dialog"
