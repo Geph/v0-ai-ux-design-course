@@ -24,23 +24,46 @@ export default function ResourceLibrary() {
 
   // Load resources from localStorage on mount
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      try {
-        const parsed = xmlToResources(stored)
-        if (parsed.length > 0) {
-          setResources(parsed)
+    const loadResources = async () => {
+      let resourcesToUse = initialResources
+      
+      // Try to load from stored localStorage first
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        try {
+          const parsed = xmlToResources(stored)
+          if (parsed.length > 0) {
+            resourcesToUse = parsed
+          }
+        } catch (err) {
+          console.error("Failed to load stored resources:", err)
         }
-      } catch (err) {
-        console.error("Failed to load stored resources:", err)
+      } else {
+        // If no localStorage data, try to load from /out/resources.xml
+        try {
+          const response = await fetch('/out/resources.xml')
+          if (response.ok) {
+            const xmlText = await response.text()
+            const parsed = xmlToResources(xmlText)
+            if (parsed.length > 0) {
+              resourcesToUse = parsed
+            }
+          }
+        } catch (err) {
+          console.error("Failed to load resources from /out/resources.xml:", err)
+        }
       }
+      
+      setResources(resourcesToUse)
     }
 
-    // Load saved theme/palette preferences
+    loadResources()
+
+    // Load saved theme/palette preferences, defaulting to midnight-gold
     const savedPalette = localStorage.getItem(PALETTE_STORAGE_KEY)
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
     
-    const palette = colorPalettes.find(p => p.id === (savedPalette || "vibrant-blue"))
+    const palette = colorPalettes.find(p => p.id === (savedPalette || "midnight-gold"))
     if (palette) {
       applyPalette(palette, savedTheme === "dark")
       if (savedTheme === "dark") {
@@ -206,9 +229,32 @@ export default function ResourceLibrary() {
       {/* Footer */}
       <footer className="border-t border-border bg-card mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-            <p>UX Design with AI Studio Course Resource Library</p>
-            <p>Curated collection of {resources.length} learning resources</p>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
+            <div className="text-center md:text-left">
+              <p>
+                A resource library created for{" "}
+                <a 
+                  href="https://courses.illinois.edu/schedule/terms/INFO/490"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Informatics 490: User Experience Design with AI
+                </a>
+                , a course at the University of Illinois at Urbana-Champaign
+              </p>
+              <p className="mt-2">
+                <a 
+                  href="https://github.com/Geph/v0-ai-ux-design-course"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Built with Vercel
+                </a>
+              </p>
+            </div>
+            <p className="whitespace-nowrap">Curated collection of {resources.length} learning resources</p>
           </div>
         </div>
       </footer>
