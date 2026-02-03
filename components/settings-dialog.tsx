@@ -80,8 +80,8 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
     }
   }
 
-  const handleExport = () => {
-    exportXmlFile(resources, `ux-ai-resources-${new Date().toISOString().split("T")[0]}.xml`)
+  const handleExport = async () => {
+    await exportXmlFile(resources, `ux-ai-resources-${new Date().toISOString().split("T")[0]}.xml`)
   }
 
   const handleSaveAsDefault = async () => {

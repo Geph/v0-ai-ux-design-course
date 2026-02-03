@@ -75,6 +75,9 @@ export async function exportXmlFile(resources: Resource[], filename: string): Pr
   }
   
   try {
+    // Use requestIdleCallback or setTimeout to prevent blocking
+    await new Promise(resolve => setTimeout(resolve, 0))
+    
     const response = await fetch("/api/export-xml", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -86,6 +89,10 @@ export async function exportXmlFile(resources: Resource[], filename: string): Pr
     }
     
     const blob = await response.blob()
+    
+    // Yield to event loop before creating download
+    await new Promise(resolve => setTimeout(resolve, 0))
+    
     const url = URL.createObjectURL(blob)
     
     const a = document.createElement("a")
@@ -93,6 +100,9 @@ export async function exportXmlFile(resources: Resource[], filename: string): Pr
     a.download = filename
     a.style.display = "none"
     document.body.appendChild(a)
+    
+    // Yield to event loop before triggering click
+    await new Promise(resolve => setTimeout(resolve, 0))
     a.click()
     
     setTimeout(() => {
