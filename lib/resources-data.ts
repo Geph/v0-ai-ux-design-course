@@ -162,38 +162,16 @@ export const resources: Resource[] = [
   }
 ]
 
-// Base popular tags for the course
-export const BASE_POPULAR_TAGS = [
-  "User research",
-  "Prototyping", 
-  "Vibe Coding",
-  "Examples",
-  "Ethics",
-  "UXD and AI",
-  "Productivity Tools",
-  "Claude",
-  "ChatGPT",
-  "Gemini",
-  "Midjourney",
-  "Figma",
-  "Study",
-  "Tutorial",
-  "Qualitative",
-  "Quantitative / Data",
-  "Quantitative/Automated",
-  "Methodology"
-]
+// Base popular tags are now dynamically generated from actual resource tags
+export const BASE_POPULAR_TAGS: string[] = []
 
 // Extract all unique tags from resources
 export const allTags = Array.from(
   new Set(resources.flatMap(resource => resource.tags))
 ).sort()
 
-// Get popular tags - always include base tags, supplemented by frequently used tags
-export const getPopularTags = (resourceList: Resource[] = resources, limit: number = 14): string[] => {
-  // Start with base tags
-  const result = [...BASE_POPULAR_TAGS]
-  
+// Get popular tags - generated from actual tags used in the library, sorted by frequency
+export const getPopularTags = (resourceList: Resource[] = resources, limit: number = 20): string[] => {
   // Count tag frequency in resources
   const tagCounts: Record<string, number> = {}
   resourceList.forEach(resource => {
@@ -202,12 +180,9 @@ export const getPopularTags = (resourceList: Resource[] = resources, limit: numb
     })
   })
   
-  // Add frequently used tags that aren't already in base tags
-  const additionalTags = Object.entries(tagCounts)
-    .filter(([tag]) => !BASE_POPULAR_TAGS.includes(tag))
+  // Sort by frequency and return top tags
+  return Object.entries(tagCounts)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, limit - BASE_POPULAR_TAGS.length)
+    .slice(0, limit)
     .map(([tag]) => tag)
-  
-  return [...result, ...additionalTags].slice(0, limit)
 }

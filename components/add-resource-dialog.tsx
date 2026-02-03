@@ -139,6 +139,9 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
         if (data.duration) {
           setDuration(data.duration)
         }
+        if (data.year) {
+          setYear(data.year.toString())
+        }
         setScrapedSuccessfully(true)
       }
     } catch (error) {

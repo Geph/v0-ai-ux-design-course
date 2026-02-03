@@ -208,7 +208,7 @@ export function ResourceCard({ resource, onTagClick, onEditClick, onRatingChange
 
         {/* Tags */}
         <div className="flex flex-wrap items-center gap-1.5">
-          {resource.tags.slice(0, 3).map((tag, index) => (
+          {resource.tags.map((tag, index) => (
             <Badge
               key={tag}
               variant="secondary"

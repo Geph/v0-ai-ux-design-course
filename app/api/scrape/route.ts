@@ -7,7 +7,6 @@ const TAG_KEYWORDS: Record<string, string[]> = {
   "Vibe Coding": ["vibe coding", "vibe", "cursor", "copilot", "code generation", "ai coding", "v0"],
   "Examples": ["example", "case study", "showcase", "demo", "sample", "portfolio"],
   "Ethics": ["ethics", "ethical", "bias", "privacy", "consent", "trust", "responsible", "fairness", "harm"],
-  "UXD and AI": ["ux", "user experience", "ai design", "ai ux", "human-ai", "intelligent interface"],
   "Productivity Tools": ["tool", "productivity", "workflow", "automation", "efficiency", "app"],
   "Claude": ["claude", "anthropic"],
   "ChatGPT": ["chatgpt", "gpt", "openai", "gpt-4", "gpt-5"],
@@ -78,9 +77,10 @@ export async function POST(request: NextRequest) {
           const thumbnail = `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`
           const combinedText = `${data.title || ""} ${data.author_name || ""} youtube video tutorial`
           
-          // Try to get duration and description from page scrape (YouTube doesn't include it in oEmbed)
+          // Try to get duration, description, and year from page scrape (YouTube doesn't include it in oEmbed)
           let duration: string | undefined
           let description: string | undefined
+          let year: number | undefined
           try {
             const pageResponse = await fetch(url, {
               headers: {
@@ -120,9 +120,17 @@ export async function POST(request: NextRequest) {
                   description += "..."
                 }
               }
+              
+              // Extract publish date/year
+              const dateMatch = html.match(/"publishDate":"(\d{4})-\d{2}-\d{2}"/) ||
+                               html.match(/"uploadDate":"(\d{4})-\d{2}-\d{2}"/) ||
+                               html.match(/"datePublished":"(\d{4})-\d{2}-\d{2}"/)
+              if (dateMatch) {
+                year = parseInt(dateMatch[1], 10)
+              }
             }
           } catch (e) {
-            // Duration/description extraction failed, continue without it
+            // Duration/description/year extraction failed, continue without it
           }
           
           // Build a better summary from description or fallback
@@ -141,6 +149,7 @@ export async function POST(request: NextRequest) {
             suggestedTags: extractTags(fullText),
             type: "video",
             duration,
+            year,
           })
         }
       } catch (e) {
