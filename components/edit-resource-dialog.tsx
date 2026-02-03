@@ -161,7 +161,7 @@ export function EditResourceDialog({
   }
 
   const useGenericUrlThumbnail = () => {
-    setThumbnail("/pdf-thumbnail.jpg")
+    setThumbnail("/url-thumbnail.jpg")
   }
 
   const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -407,19 +407,20 @@ export function EditResourceDialog({
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 onClick={() => document.getElementById('edit-thumbnail-upload')?.click()}
                 disabled={isGeneratingThumbnail}
                 className="bg-transparent"
               >
                 {isGeneratingThumbnail ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                     Processing...
                   </>
                 ) : (
                   <>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Thumbnail
+                    <Upload className="h-3 w-3 mr-1" />
+                    Upload
                   </>
                 )}
               </Button>
@@ -434,19 +435,20 @@ export function EditResourceDialog({
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={generateThumbnail}
                   disabled={isGeneratingThumbnail}
                   className="bg-transparent"
                 >
                   {isGeneratingThumbnail ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                       Generating...
                     </>
                   ) : (
                     <>
-                      <Camera className="h-4 w-4 mr-2" />
-                      Generate from Screenshot
+                      <Camera className="h-3 w-3 mr-1" />
+                      Screenshot
                     </>
                   )}
                 </Button>
@@ -455,19 +457,20 @@ export function EditResourceDialog({
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={() => scrapeUrl(url)}
                   disabled={isGeneratingThumbnail}
                   className="bg-transparent"
                 >
                   {isGeneratingThumbnail ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                       Loading...
                     </>
                   ) : (
                     <>
-                      <Camera className="h-4 w-4 mr-2" />
-                      Regenerate Video Thumbnail
+                      <Camera className="h-3 w-3 mr-1" />
+                      Regenerate
                     </>
                   )}
                 </Button>
@@ -476,22 +479,24 @@ export function EditResourceDialog({
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={useGenericPdfThumbnail}
                   className="bg-transparent"
                 >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Generic PDF Image
+                  <FileText className="h-3 w-3 mr-1" />
+                  Generic PDF
                 </Button>
               )}
               {url && type !== 'video' && type !== 'pdf' && (
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={useGenericUrlThumbnail}
                   className="bg-transparent"
                 >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Generic URL Image
+                  <Globe className="h-3 w-3 mr-1" />
+                  Generic URL
                 </Button>
               )}
             </div>

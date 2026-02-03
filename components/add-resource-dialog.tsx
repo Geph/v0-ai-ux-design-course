@@ -237,7 +237,7 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
   }
 
   const useGenericUrlThumbnail = () => {
-    setThumbnail("/pdf-thumbnail.jpg") // Using same placeholder for now
+    setThumbnail("/url-thumbnail.jpg")
   }
 
   const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -781,19 +781,20 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
               <Button
                 type="button"
                 variant="outline"
+                size="sm"
                 onClick={() => document.getElementById('thumbnail-upload')?.click()}
                 disabled={isGeneratingThumbnail}
                 className="bg-transparent"
               >
                 {isGeneratingThumbnail ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                     Processing...
                   </>
                 ) : (
                   <>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Thumbnail
+                    <Upload className="h-3 w-3 mr-1" />
+                    Upload
                   </>
                 )}
               </Button>
@@ -808,19 +809,20 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={generateThumbnail}
                   disabled={isGeneratingThumbnail}
                   className="bg-transparent"
                 >
                   {isGeneratingThumbnail ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                       Generating...
                     </>
                   ) : (
                     <>
-                      <Camera className="h-4 w-4 mr-2" />
-                      Generate from Screenshot
+                      <Camera className="h-3 w-3 mr-1" />
+                      Screenshot
                     </>
                   )}
                 </Button>
@@ -829,19 +831,20 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={() => scrapeUrl(url)}
                   disabled={isScrapingUrl}
                   className="bg-transparent"
                 >
                   {isScrapingUrl ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                       Loading...
                     </>
                   ) : (
                     <>
-                      <Camera className="h-4 w-4 mr-2" />
-                      Regenerate Video Thumbnail
+                      <Camera className="h-3 w-3 mr-1" />
+                      Regenerate
                     </>
                   )}
                 </Button>
@@ -850,22 +853,24 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={useGenericPdfThumbnail}
                   className="bg-transparent"
                 >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Generic PDF Image
+                  <FileText className="h-3 w-3 mr-1" />
+                  Generic PDF
                 </Button>
               )}
               {url && !uploadedFile && detectedType !== 'video' && (
                 <Button
                   type="button"
                   variant="outline"
+                  size="sm"
                   onClick={useGenericUrlThumbnail}
                   className="bg-transparent"
                 >
-                  <FileText className="h-4 w-4 mr-2" />
-                  Generic URL Image
+                  <Globe className="h-3 w-3 mr-1" />
+                  Generic URL
                 </Button>
               )}
             </div>
