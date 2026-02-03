@@ -220,8 +220,8 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
           setThumbnail(thumbnailDataUrl)
         }
       }
-      // For URL-based resources, use screenshot service
-      else if (url && !url.startsWith('file://')) {
+      // For URL-based resources (not YouTube - those get scraped automatically)
+      else if (url && !url.startsWith('file://') && detectedType !== 'video') {
         const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
         setThumbnail(thumbnailUrl)
       }
@@ -232,8 +232,12 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
     }
   }
 
-  const useGenericThumbnail = () => {
+  const useGenericPdfThumbnail = () => {
     setThumbnail("/pdf-thumbnail.jpg")
+  }
+
+  const useGenericUrlThumbnail = () => {
+    setThumbnail("/pdf-thumbnail.jpg") // Using same placeholder for now
   }
 
   const handleFileUpload = (file: File) => {
@@ -707,8 +711,8 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
 
           <div className="space-y-2">
             <Label>Thumbnail (optional)</Label>
-            <div className="flex gap-2">
-              {(url || uploadedFile) && (
+            <div className="flex flex-wrap gap-2">
+              {(url || uploadedFile) && detectedType !== 'video' && (
                 <Button
                   type="button"
                   variant="outline"
@@ -729,15 +733,28 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
                   )}
                 </Button>
               )}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={useGenericThumbnail}
-                className="bg-transparent"
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Use Generic Image
-              </Button>
+              {(uploadedFile?.type === 'application/pdf' || detectedType === 'pdf') && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={useGenericPdfThumbnail}
+                  className="bg-transparent"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generic PDF Image
+                </Button>
+              )}
+              {url && !uploadedFile && detectedType !== 'video' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={useGenericUrlThumbnail}
+                  className="bg-transparent"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generic URL Image
+                </Button>
+              )}
             </div>
             {thumbnail && (
               <div className="mt-2 border rounded-lg overflow-hidden">

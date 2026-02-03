@@ -123,11 +123,8 @@ export function EditResourceDialog({
     setIsGeneratingThumbnail(true)
     
     try {
-      // For PDFs, use a static thumbnail with PDF icon
-      if (type === "pdf") {
-        setThumbnail("/pdf-thumbnail.jpg")
-      } else {
-        // For other types, use screenshot service
+      // For URL-based resources (not videos - those use scraped thumbnails)
+      if (type !== "video") {
         const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
         setThumbnail(thumbnailUrl)
       }
@@ -136,6 +133,14 @@ export function EditResourceDialog({
     } finally {
       setIsGeneratingThumbnail(false)
     }
+  }
+
+  const useGenericPdfThumbnail = () => {
+    setThumbnail("/pdf-thumbnail.jpg")
+  }
+
+  const useGenericUrlThumbnail = () => {
+    setThumbnail("/pdf-thumbnail.jpg")
   }
 
   const suggestedTags = popularTags.filter(t => !tags.includes(t))
@@ -310,31 +315,49 @@ export function EditResourceDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-thumbnail">Thumbnail URL</Label>
-            <div className="flex gap-2">
-              <Input
-                id="edit-thumbnail"
-                type="url"
-                value={thumbnail}
-                onChange={(e) => setThumbnail(e.target.value)}
-                placeholder="https://..."
-                className="flex-1"
-              />
-              {url && (
+            <Label>Thumbnail (optional)</Label>
+            <div className="flex flex-wrap gap-2">
+              {url && type !== 'video' && (
                 <Button
                   type="button"
                   variant="outline"
-                  size="icon"
                   onClick={generateThumbnail}
                   disabled={isGeneratingThumbnail}
-                  className="bg-transparent shrink-0"
-                  title="Generate thumbnail from screenshot"
+                  className="bg-transparent"
                 >
                   {isGeneratingThumbnail ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
                   ) : (
-                    <Camera className="h-4 w-4" />
+                    <>
+                      <Camera className="h-4 w-4 mr-2" />
+                      Generate from Screenshot
+                    </>
                   )}
+                </Button>
+              )}
+              {type === 'pdf' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={useGenericPdfThumbnail}
+                  className="bg-transparent"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generic PDF Image
+                </Button>
+              )}
+              {url && type !== 'video' && type !== 'pdf' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={useGenericUrlThumbnail}
+                  className="bg-transparent"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generic URL Image
                 </Button>
               )}
             </div>
