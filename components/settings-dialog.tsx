@@ -149,33 +149,8 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* Theme Toggle */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Theme Mode</Label>
-            <div className="flex gap-2">
-              <Button
-                variant={isDark ? "outline" : "default"}
-                size="sm"
-                onClick={() => !isDark && handleThemeToggle()}
-                className="flex-1 gap-2"
-              >
-                <Sun className="h-4 w-4" />
-                Light
-              </Button>
-              <Button
-                variant={isDark ? "default" : "outline"}
-                size="sm"
-                onClick={() => isDark && handleThemeToggle()}
-                className="flex-1 gap-2"
-              >
-                <Moon className="h-4 w-4" />
-                Dark
-              </Button>
-            </div>
-          </div>
-
           {/* Color Palette Selection */}
-          <div className="space-y-3 border-t pt-4">
+          <div className="space-y-3">
             <Label className="text-sm font-medium">Color Palette</Label>
             <div className="grid grid-cols-2 gap-2">
               {colorPalettes.map((palette) => (
@@ -186,36 +161,6 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
                   onClick={() => handlePaletteChange(palette.id)}
                 />
               ))}
-            </div>
-          </div>
-
-          {/* Popular Tags */}
-          <div className="space-y-3 border-t pt-4">
-            <Label className="text-sm font-medium">Popular Tags</Label>
-            <div className="flex flex-wrap gap-2">
-              {customTags.map((tag) => (
-                <Badge key={tag} variant="secondary" className="gap-1">
-                  {tag}
-                  <button
-                    onClick={() => handleRemoveTag(tag)}
-                    className="ml-1 hover:text-destructive"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                placeholder="Add a tag..."
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
-                className="flex-1"
-              />
-              <Button onClick={handleAddTag} size="sm">
-                Add
-              </Button>
             </div>
           </div>
 

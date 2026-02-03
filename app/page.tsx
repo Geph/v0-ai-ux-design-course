@@ -10,7 +10,7 @@ import { EditResourceDialog } from "@/components/edit-resource-dialog"
 import { resources as initialResources, type Resource, type ResourceType, getPopularTags } from "@/lib/resources-data"
 import { xmlToResources, resourcesToXml } from "@/lib/xml-utils"
 import { colorPalettes, applyPalette, PALETTE_STORAGE_KEY, THEME_STORAGE_KEY } from "@/lib/color-palettes"
-import { SlidersHorizontal, X } from "lucide-react"
+import { SlidersHorizontal, X, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const STORAGE_KEY = "ux-ai-resources"
@@ -22,6 +22,7 @@ export default function ResourceLibrary() {
   const [selectedType, setSelectedType] = useState<ResourceType | "all">("all")
   const [editResource, setEditResource] = useState<Resource | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [showPopularTags, setShowPopularTags] = useState(true)
 
   // Load resources from localStorage on mount
   useEffect(() => {
@@ -179,15 +180,25 @@ export default function ResourceLibrary() {
 
           {/* Popular Tags */}
           <div className="space-y-3">
-            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <button 
+              onClick={() => setShowPopularTags(!showPopularTags)}
+              className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
+            >
               <SlidersHorizontal className="h-4 w-4" />
               <span>Popular Tags</span>
-            </div>
-            <TagFilter 
-              tags={popularTags} 
-              selectedTags={selectedTags} 
-              onTagToggle={handleTagToggle}
-            />
+              {showPopularTags ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </button>
+            {showPopularTags && (
+              <TagFilter
+                tags={popularTags}
+                selectedTags={selectedTags}
+                onTagToggle={handleTagToggle}
+              />
+            )}
           </div>
 
           {/* Active Filters Summary */}
