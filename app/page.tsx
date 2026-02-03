@@ -231,9 +231,9 @@ export default function ResourceLibrary() {
       />
 
       {/* Footer */}
-      <footer className="border-t border-border bg-slate-900 mt-16">
+      <footer className="border-t border-border bg-card mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-amber-100">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
             <div className="text-center md:text-left space-y-2">
               <p className="whitespace-nowrap">Curated collection of {resources.length} resources</p>
             </div>
@@ -242,7 +242,7 @@ export default function ResourceLibrary() {
                 href="https://informatics.ischool.illinois.edu/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-amber-100 hover:text-amber-300 transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
                 title="University of Illinois Informatics"
               >
                 <img src="/uiuc-block-i.png" alt="UIUC Block I" className="h-6 w-6" />
@@ -251,7 +251,7 @@ export default function ResourceLibrary() {
                 href="https://github.com/Geph/v0-ai-ux-design-course"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-amber-100 hover:text-amber-300 transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
                 title="GitHub Repository"
               >
                 <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
@@ -262,7 +262,7 @@ export default function ResourceLibrary() {
                 href="https://vercel.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-amber-100 hover:text-amber-300 transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
                 title="Built with Vercel"
               >
                 <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
@@ -271,14 +271,14 @@ export default function ResourceLibrary() {
               </a>
             </div>
           </div>
-          <div className="border-t border-amber-900/30 mt-6 pt-4 text-center text-xs text-amber-100/70">
+          <div className="border-t border-border mt-6 pt-4 text-center text-xs text-muted-foreground">
             <p>
               A resource library created for{" "}
               <a 
                 href="https://courses.illinois.edu/schedule/terms/INFO/490"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-amber-300 hover:underline"
+                className="text-primary hover:underline"
               >
                 Informatics 490: User Experience Design with AI
               </a>

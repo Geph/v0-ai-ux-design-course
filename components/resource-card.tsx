@@ -90,7 +90,7 @@ export function ResourceCard({ resource, onTagClick, onEditClick, onRatingChange
   return (
     <Card className="group overflow-hidden border-border bg-card hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1">
       {/* Title Section - Above Image */}
-      <CardContent className="p-3 pb-2">
+      <CardContent className="px-3 py-1">
         <a 
           href={resourceUrl} 
           target="_blank" 
