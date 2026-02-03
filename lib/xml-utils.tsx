@@ -69,37 +69,26 @@ export function generateApaCitation(resource: Resource): string {
  * Exports resources to an XML file and triggers a download
  */
 export function exportXmlFile(resources: Resource[], filename: string): void {
-  console.log("[v0] exportXmlFile called with", resources.length, "resources")
-  
   if (!resources || resources.length === 0) {
-    console.log("[v0] No resources to export")
     alert("No resources to export")
     return
   }
   
   try {
     const xml = resourcesToXml(resources)
-    console.log("[v0] XML generated, length:", xml.length)
     
-    const blob = new Blob([xml], { type: "application/xml" })
-    const url = URL.createObjectURL(blob)
+    // Use data URL instead of blob URL to bypass CSP restrictions
+    const dataUrl = "data:application/xml;charset=utf-8," + encodeURIComponent(xml)
     
     const a = document.createElement("a")
-    a.href = url
+    a.href = dataUrl
     a.download = filename
     a.style.display = "none"
     document.body.appendChild(a)
     a.click()
-    
-    // Clean up after a short delay
-    setTimeout(() => {
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    }, 100)
-    
-    console.log("[v0] Download triggered for", filename)
+    document.body.removeChild(a)
   } catch (error) {
-    console.error("[v0] Export failed:", error)
+    console.error("Export failed:", error)
     alert("Failed to export resources")
   }
 }
