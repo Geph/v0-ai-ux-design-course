@@ -66,27 +66,39 @@ export function generateApaCitation(resource: Resource): string {
 }
 
 /**
- * Exports resources to an XML file and triggers a download
+ * Exports resources to an XML file and triggers a download via API
  */
-export function exportXmlFile(resources: Resource[], filename: string): void {
+export async function exportXmlFile(resources: Resource[], filename: string): Promise<void> {
   if (!resources || resources.length === 0) {
     alert("No resources to export")
     return
   }
   
   try {
-    const xml = resourcesToXml(resources)
+    const response = await fetch("/api/export-xml", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resources }),
+    })
     
-    // Use data URL instead of blob URL to bypass CSP restrictions
-    const dataUrl = "data:application/xml;charset=utf-8," + encodeURIComponent(xml)
+    if (!response.ok) {
+      throw new Error("Export failed")
+    }
+    
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
     
     const a = document.createElement("a")
-    a.href = dataUrl
+    a.href = url
     a.download = filename
     a.style.display = "none"
     document.body.appendChild(a)
     a.click()
-    document.body.removeChild(a)
+    
+    setTimeout(() => {
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    }, 100)
   } catch (error) {
     console.error("Export failed:", error)
     alert("Failed to export resources")
