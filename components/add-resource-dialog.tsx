@@ -194,9 +194,31 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
         }
         reader.readAsDataURL(uploadedFile)
       }
-      // For PDFs (uploaded or URL), use a static thumbnail with PDF icon
-      else if (detectedType === "pdf") {
-        setThumbnail("/pdf-thumbnail.jpg")
+      // For uploaded PDFs, generate thumbnail from first page
+      else if (uploadedFile && uploadedFile.type === 'application/pdf') {
+        const pdfjsLib = await import('pdfjs-dist')
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+        
+        const arrayBuffer = await uploadedFile.arrayBuffer()
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+        const page = await pdf.getPage(1)
+        
+        const viewport = page.getViewport({ scale: 1.5 })
+        const canvas = document.createElement('canvas')
+        const context = canvas.getContext('2d')
+        
+        if (context) {
+          canvas.height = viewport.height
+          canvas.width = viewport.width
+          
+          await page.render({
+            canvasContext: context,
+            viewport: viewport
+          }).promise
+          
+          const thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.8)
+          setThumbnail(thumbnailDataUrl)
+        }
       }
       // For URL-based resources, use screenshot service
       else if (url && !url.startsWith('file://')) {
@@ -208,6 +230,10 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
     } finally {
       setIsGeneratingThumbnail(false)
     }
+  }
+
+  const useGenericThumbnail = () => {
+    setThumbnail("/pdf-thumbnail.jpg")
   }
 
   const handleFileUpload = (file: File) => {
@@ -680,40 +706,45 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
               </div>
 
           <div className="space-y-2">
-            <Label htmlFor="thumbnail">Thumbnail URL (optional)</Label>
+            <Label>Thumbnail (optional)</Label>
             <div className="flex gap-2">
-              <Input
-                id="thumbnail"
-                type="text"
-                value={thumbnail}
-                onChange={(e) => setThumbnail(e.target.value)}
-                placeholder="https://..."
-                className="flex-1"
-              />
-                  {url && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={generateThumbnail}
-                      disabled={isGeneratingThumbnail}
-                      className="bg-transparent shrink-0"
-                      title="Generate thumbnail from screenshot"
-                    >
-                      {isGeneratingThumbnail ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Camera className="h-4 w-4" />
-                      )}
-                    </Button>
+              {(url || uploadedFile) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={generateThumbnail}
+                  disabled={isGeneratingThumbnail}
+                  className="bg-transparent"
+                >
+                  {isGeneratingThumbnail ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-4 w-4 mr-2" />
+                      Generate from Screenshot
+                    </>
                   )}
-                </div>
-                {thumbnail && (
-                  <div className="mt-2 border rounded-lg overflow-hidden">
-                    <img src={thumbnail} alt="Thumbnail preview" className="w-full h-32 object-cover" />
-                  </div>
-                )}
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={useGenericThumbnail}
+                className="bg-transparent"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Use Generic Image
+              </Button>
+            </div>
+            {thumbnail && (
+              <div className="mt-2 border rounded-lg overflow-hidden">
+                <img src={thumbnail} alt="Thumbnail preview" className="w-full h-32 object-cover" />
               </div>
+            )}
+          </div>
 
               <div className="flex gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={resetForm} className="flex-1 bg-transparent">
