@@ -679,17 +679,17 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="thumbnail">Thumbnail URL (optional)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="thumbnail"
-                    type="url"
-                    value={thumbnail}
-                    onChange={(e) => setThumbnail(e.target.value)}
-                    placeholder="https://..."
-                    className="flex-1"
-                  />
+          <div className="space-y-2">
+            <Label htmlFor="thumbnail">Thumbnail URL (optional)</Label>
+            <div className="flex gap-2">
+              <Input
+                id="thumbnail"
+                type="text"
+                value={thumbnail}
+                onChange={(e) => setThumbnail(e.target.value)}
+                placeholder="https://..."
+                className="flex-1"
+              />
                   {url && (
                     <Button
                       type="button"
