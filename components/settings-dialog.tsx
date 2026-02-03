@@ -13,18 +13,39 @@ import type { Resource } from "@/lib/resources-data"
 import { Badge } from "@/components/ui/badge"
 
 const POPULAR_TAGS_STORAGE_KEY = "ux-ai-popular-tags"
+const APP_NAME_STORAGE_KEY = "ux-ai-app-name"
+const APP_DESCRIPTION_STORAGE_KEY = "ux-ai-app-description"
+const APP_FOOTER_STORAGE_KEY = "ux-ai-app-footer"
 
 interface SettingsDialogProps {
   resources: Resource[]
   onImport: (resources: Resource[]) => void
+  onAppNameChange?: (name: string) => void
+  onAppDescriptionChange?: (description: string) => void
+  onFooterTextChange?: (text: string) => void
+  currentAppName?: string
+  currentAppDescription?: string
+  currentFooterText?: string
 }
 
-export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
+export function SettingsDialog({ 
+  resources, 
+  onImport,
+  onAppNameChange,
+  onAppDescriptionChange,
+  onFooterTextChange,
+  currentAppName = "User Experience Design with AI",
+  currentAppDescription = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence.",
+  currentFooterText = "a course at the University of Illinois at Urbana-Champaign"
+}: SettingsDialogProps) {
   const [open, setOpen] = useState(false)
   const [selectedPalette, setSelectedPalette] = useState<string>("vibrant-blue")
   const [isDark, setIsDark] = useState(false)
   const [customTags, setCustomTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
+  const [appName, setAppName] = useState(currentAppName)
+  const [appDescription, setAppDescription] = useState(currentAppDescription)
+  const [footerText, setFooterText] = useState(currentFooterText)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load saved preferences on mount
@@ -42,6 +63,16 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
     if (savedTags) {
       setCustomTags(JSON.parse(savedTags))
     }
+    
+    // Load app metadata
+    const savedName = localStorage.getItem(APP_NAME_STORAGE_KEY)
+    if (savedName) setAppName(savedName)
+    
+    const savedDescription = localStorage.getItem(APP_DESCRIPTION_STORAGE_KEY)
+    if (savedDescription) setAppDescription(savedDescription)
+    
+    const savedFooter = localStorage.getItem(APP_FOOTER_STORAGE_KEY)
+    if (savedFooter) setFooterText(savedFooter)
     
     // Apply saved palette
     const palette = colorPalettes.find(p => p.id === (savedPalette || "vibrant-blue"))
@@ -140,17 +171,64 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
           <span className="sr-only">Settings</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
             Customize your library appearance and manage your data.
           </DialogDescription>
         </DialogHeader>
-
-        <div className="space-y-6 py-4">
-          {/* Color Palette Selection */}
+        
+        <div className="space-y-6 py-4 pr-4">
+          {/* App Name */}
           <div className="space-y-3">
+            <Label htmlFor="app-name" className="text-sm font-medium">Library Name</Label>
+            <Input
+              id="app-name"
+              value={appName}
+              onChange={(e) => {
+                setAppName(e.target.value)
+                onAppNameChange?.(e.target.value)
+                localStorage.setItem(APP_NAME_STORAGE_KEY, e.target.value)
+              }}
+              placeholder="Enter library name"
+            />
+          </div>
+
+          {/* App Description */}
+          <div className="space-y-3">
+            <Label htmlFor="app-description" className="text-sm font-medium">Library Description</Label>
+            <textarea
+              id="app-description"
+              value={appDescription}
+              onChange={(e) => {
+                setAppDescription(e.target.value)
+                onAppDescriptionChange?.(e.target.value)
+                localStorage.setItem(APP_DESCRIPTION_STORAGE_KEY, e.target.value)
+              }}
+              placeholder="Enter library description"
+              className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background resize-none"
+              rows={3}
+            />
+          </div>
+
+          {/* Footer Text */}
+          <div className="space-y-3">
+            <Label htmlFor="footer-text" className="text-sm font-medium">Footer Text</Label>
+            <Input
+              id="footer-text"
+              value={footerText}
+              onChange={(e) => {
+                setFooterText(e.target.value)
+                onFooterTextChange?.(e.target.value)
+                localStorage.setItem(APP_FOOTER_STORAGE_KEY, e.target.value)
+              }}
+              placeholder="Enter footer text"
+            />
+          </div>
+
+          {/* Color Palette Selection */}
+          <div className="space-y-3 border-t pt-4">
             <Label className="text-sm font-medium">Color Palette</Label>
             <div className="grid grid-cols-2 gap-2">
               {colorPalettes.map((palette) => (

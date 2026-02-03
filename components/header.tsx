@@ -10,9 +10,18 @@ interface HeaderProps {
   onAddResource: (resource: Resource) => void
   onImport: (resources: Resource[]) => void
   popularTags: string[]
+  appName?: string
+  appDescription?: string
 }
 
-export function Header({ resources, onAddResource, onImport, popularTags }: HeaderProps) {
+export function Header({ 
+  resources, 
+  onAddResource, 
+  onImport, 
+  popularTags,
+  appName = "User Experience Design with AI",
+  appDescription = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence."
+}: HeaderProps) {
   return (
     <header className="relative overflow-hidden">
       {/* Background Pattern */}
@@ -30,7 +39,7 @@ export function Header({ resources, onAddResource, onImport, popularTags }: Head
         {/* Title */}
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center text-foreground mb-4 text-balance">
           <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-            User Experience Design with AI
+            {appName}
           </span>
           <br />
           <span className="text-foreground text-2xl md:text-3xl lg:text-4xl font-semibold">Knowledge Library</span>
@@ -38,7 +47,7 @@ export function Header({ resources, onAddResource, onImport, popularTags }: Head
 
         {/* Subtitle */}
         <p className="text-base md:text-lg text-muted-foreground text-center max-w-2xl mx-auto mb-8 text-pretty">
-          Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence.
+          {appDescription}
         </p>
 
         {/* Add Resource Button */}
