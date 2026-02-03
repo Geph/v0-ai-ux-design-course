@@ -35,8 +35,6 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
   const [thumbnail, setThumbnail] = useState("")
-  const [duration, setDuration] = useState("")
-  const [pages, setPages] = useState("")
   const [year, setYear] = useState("")
   const [showForm, setShowForm] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
@@ -55,8 +53,6 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
     setTags([])
     setNewTag("")
     setThumbnail("")
-    setDuration("")
-    setPages("")
     setYear("")
     setShowForm(false)
     setUploadedFile(null)
@@ -132,10 +128,16 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
       
       if (response.ok) {
         const data = await response.json()
+        console.log("[v0] Scrape response data:", data)
         
         if (data.title) setTitle(data.title)
         if (data.author) setAuthor(data.author)
-        if (data.summary) setSummary(data.summary)
+        if (data.summary) {
+          console.log("[v0] Setting summary:", data.summary)
+          setSummary(data.summary)
+        } else {
+          console.log("[v0] No summary in response")
+        }
         if (data.thumbnail) setThumbnail(data.thumbnail)
         if (data.suggestedTags && data.suggestedTags.length > 0) {
           setTags((prevTags) => {
@@ -151,9 +153,6 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
         }
         if (data.type) {
           setDetectedType(data.type)
-        }
-        if (data.duration) {
-          setDuration(data.duration)
         }
         if (data.year) {
           setYear(data.year.toString())
@@ -312,8 +311,6 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
       tags: tags,
       dateAdded: new Date().toISOString().split("T")[0],
       author: author ? author.slice(0, 160) : undefined,
-      duration: detectedType === "video" && duration ? duration : undefined,
-      pages: detectedType === "pdf" && pages ? parseInt(pages, 10) : undefined,
       year: year ? parseInt(year, 10) : undefined,
       localPath: localPath,
     }
@@ -343,8 +340,6 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
       tags: tags,
       dateAdded: new Date().toISOString().split("T")[0],
       author: author ? author.slice(0, 160) : undefined,
-      duration: detectedType === "video" && duration ? duration : undefined,
-      pages: detectedType === "pdf" && pages ? parseInt(pages, 10) : undefined,
       year: year ? parseInt(year, 10) : undefined,
       localPath: localPath,
     }
@@ -586,44 +581,19 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
                 </div>
               )}
 
-              {detectedType === "video" && (
-                <div className="space-y-2">
-                  <Label htmlFor="duration">Duration</Label>
-                  <Input
-                    id="duration"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    placeholder="e.g., 45:30"
-                  />
-                </div>
-              )}
-
-              {detectedType === "pdf" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="pages">Page Count</Label>
-                    <Input
-                      id="pages"
-                      type="number"
-                      value={pages}
-                      onChange={(e) => setPages(e.target.value)}
-                      placeholder="e.g., 24"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="year">Year</Label>
-                    <Input
-                      id="year"
-                      type="number"
-                      value={year}
-                      onChange={(e) => setYear(e.target.value)}
-                      placeholder="e.g., 2024"
-                      min={1900}
-                      max={2100}
-                    />
-                  </div>
-                </div>
-              )}
+              {/* Year field for all resource types */}
+              <div className="space-y-2">
+                <Label htmlFor="year">Year</Label>
+                <Input
+                  id="year"
+                  type="number"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  placeholder="e.g., 2024"
+                  min={1900}
+                  max={2100}
+                />
+              </div>
 
               {detectedType !== "pdf" && (
                 <div className="space-y-2">

@@ -10,8 +10,6 @@ export interface Resource {
   tags: string[]
   dateAdded: string
   author?: string
-  duration?: string
-  pages?: number
   year?: number // Publication year
   localPath?: string // For locally uploaded PDFs
   ratingSum?: number // Sum of all user ratings
