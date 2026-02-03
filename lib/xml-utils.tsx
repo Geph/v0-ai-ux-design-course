@@ -66,7 +66,7 @@ export function generateApaCitation(resource: Resource): string {
 }
 
 /**
- * Exports resources to an XML file and triggers a download via API
+ * Exports resources to an XML file and triggers a download (client-side)
  */
 export async function exportXmlFile(resources: Resource[], filename: string): Promise<void> {
   if (!resources || resources.length === 0) {
@@ -75,24 +75,14 @@ export async function exportXmlFile(resources: Resource[], filename: string): Pr
   }
   
   try {
-    // Use requestIdleCallback or setTimeout to prevent blocking
+    // Yield to event loop to prevent blocking UI
     await new Promise(resolve => setTimeout(resolve, 0))
     
-    const response = await fetch("/api/export-xml", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ resources }),
-    })
+    // Generate XML client-side
+    const xml = resourcesToXml(resources)
     
-    if (!response.ok) {
-      throw new Error("Export failed")
-    }
-    
-    const blob = await response.blob()
-    
-    // Yield to event loop before creating download
-    await new Promise(resolve => setTimeout(resolve, 0))
-    
+    // Create blob and download
+    const blob = new Blob([xml], { type: "application/xml;charset=utf-8" })
     const url = URL.createObjectURL(blob)
     
     const a = document.createElement("a")
