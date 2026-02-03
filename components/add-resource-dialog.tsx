@@ -240,6 +240,71 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
     setThumbnail("/pdf-thumbnail.jpg") // Using same placeholder for now
   }
 
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !file.type.startsWith('image/')) return
+
+    setIsGeneratingThumbnail(true)
+
+    try {
+      const img = new Image()
+      const reader = new FileReader()
+
+      reader.onload = (event) => {
+        if (!event.target?.result) return
+        img.src = event.target.result as string
+      }
+
+      img.onload = () => {
+        // Target dimensions: 1200x800 (3:2 aspect ratio)
+        const targetWidth = 1200
+        const targetHeight = 800
+        const targetAspect = targetWidth / targetHeight
+
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+
+        canvas.width = targetWidth
+        canvas.height = targetHeight
+
+        // Calculate dimensions to maintain aspect ratio with crop
+        const imgAspect = img.width / img.height
+        let drawWidth, drawHeight, offsetX, offsetY
+
+        if (imgAspect > targetAspect) {
+          // Image is wider - fit height and crop width
+          drawHeight = img.height
+          drawWidth = img.height * targetAspect
+          offsetX = (img.width - drawWidth) / 2
+          offsetY = 0
+        } else {
+          // Image is taller - fit width and crop height
+          drawWidth = img.width
+          drawHeight = img.width / targetAspect
+          offsetX = 0
+          offsetY = (img.height - drawHeight) / 2
+        }
+
+        // Draw cropped and scaled image
+        ctx.drawImage(
+          img,
+          offsetX, offsetY, drawWidth, drawHeight,
+          0, 0, targetWidth, targetHeight
+        )
+
+        const thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.85)
+        setThumbnail(thumbnailDataUrl)
+        setIsGeneratingThumbnail(false)
+      }
+
+      reader.readAsDataURL(file)
+    } catch (error) {
+      console.error("Failed to process thumbnail:", error)
+      setIsGeneratingThumbnail(false)
+    }
+  }
+
   const handleFileUpload = (file: File) => {
     setFileError(null)
     
@@ -711,7 +776,34 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
 
           <div className="space-y-2">
             <Label>Thumbnail (optional)</Label>
+            <p className="text-xs text-muted-foreground">Ideal size: 1200×800px (3:2 ratio). Images will be auto-cropped to fit.</p>
             <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById('thumbnail-upload')?.click()}
+                disabled={isGeneratingThumbnail}
+                className="bg-transparent"
+              >
+                {isGeneratingThumbnail ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Thumbnail
+                  </>
+                )}
+              </Button>
+              <input
+                id="thumbnail-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleThumbnailUpload}
+                className="hidden"
+              />
               {(url || uploadedFile) && detectedType !== 'video' && (
                 <Button
                   type="button"
