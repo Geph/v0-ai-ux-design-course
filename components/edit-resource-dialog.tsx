@@ -149,8 +149,19 @@ export function EditResourceDialog({
     try {
       const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
       setThumbnail(thumbnailUrl)
+      
+      // Test if the image loads successfully
+      const testImg = new Image()
+      testImg.crossOrigin = "anonymous"
+      testImg.onerror = () => {
+        alert("Screenshot service failed. Please use Upload or Generic URL thumbnail instead.")
+        setThumbnail("/url-thumbnail.jpg")
+      }
+      testImg.src = thumbnailUrl
     } catch (error) {
       console.error("Failed to generate thumbnail:", error)
+      alert("Screenshot failed. Using generic thumbnail instead.")
+      setThumbnail("/url-thumbnail.jpg")
     } finally {
       setIsGeneratingThumbnail(false)
     }
