@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Save, Trash2, FileText, Video, Globe, X, Plus, ImageIcon, Camera, Loader2 } from "lucide-react"
+import { Save, Trash2, FileText, Video, Globe, X, Plus, ImageIcon, Camera, Loader2, Upload } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { Resource, ResourceType } from "@/lib/resources-data"
 
@@ -36,8 +36,6 @@ export function EditResourceDialog({
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
   const [thumbnail, setThumbnail] = useState("")
-  const [duration, setDuration] = useState("")
-  const [pages, setPages] = useState("")
   const [year, setYear] = useState("")
   const [url, setUrl] = useState("")
   const [type, setType] = useState<ResourceType>("link")
@@ -51,8 +49,6 @@ export function EditResourceDialog({
       setSummary(resource.summary)
       setTags(resource.tags)
       setThumbnail(resource.thumbnail)
-      setDuration(resource.duration || "")
-      setPages(resource.pages?.toString() || "")
       setYear(resource.year?.toString() || "")
       setUrl(resource.url)
       setType(resource.type)
@@ -60,10 +56,25 @@ export function EditResourceDialog({
     }
   }, [resource])
 
-  const handleAddTag = (tag: string) => {
+  const formatTag = (tag: string): string => {
     const trimmed = tag.trim()
-    if (trimmed && !tags.includes(trimmed)) {
-      setTags([...tags, trimmed])
+    
+    // If the tag is all uppercase (like "RAG" or "AI"), keep it as-is
+    if (trimmed === trimmed.toUpperCase() && trimmed.length > 1) {
+      return trimmed
+    }
+    
+    // Otherwise, convert to title case (capitalize first letter of each word)
+    return trimmed
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
+  }
+
+  const handleAddTag = (tag: string) => {
+    const formatted = formatTag(tag)
+    if (formatted && !tags.includes(formatted)) {
+      setTags([...tags, formatted])
     }
     setNewTag("")
   }
@@ -90,8 +101,6 @@ export function EditResourceDialog({
       summary: summary || "No description provided.",
       tags,
       thumbnail: thumbnail || resource.thumbnail,
-      duration: type === "video" && duration ? duration : undefined,
-      pages: type === "pdf" && pages ? parseInt(pages, 10) : undefined,
       year: year ? parseInt(year, 10) : undefined,
       url: url || resource.url,
       type,
@@ -108,23 +117,114 @@ export function EditResourceDialog({
     }
   }
 
+  const scrapeUrl = async (urlToScrape: string) => {
+    setIsGeneratingThumbnail(true)
+    
+    try {
+      const response = await fetch("/api/scrape", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: urlToScrape }),
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.thumbnail) setThumbnail(data.thumbnail)
+      }
+    } catch (error) {
+      console.error("Failed to scrape thumbnail:", error)
+    } finally {
+      setIsGeneratingThumbnail(false)
+    }
+  }
+
   const generateThumbnail = async () => {
     if (!url) return
     
     setIsGeneratingThumbnail(true)
     
     try {
-      // For PDFs, use a static thumbnail with PDF icon
-      if (type === "pdf") {
-        setThumbnail("/pdf-thumbnail.jpg")
-      } else {
-        // For other types, use screenshot service
+      // For URL-based resources (not videos - those use scraped thumbnails)
+      if (type !== "video") {
         const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
         setThumbnail(thumbnailUrl)
       }
     } catch (error) {
       console.error("Failed to generate thumbnail:", error)
     } finally {
+      setIsGeneratingThumbnail(false)
+    }
+  }
+
+  const useGenericPdfThumbnail = () => {
+    setThumbnail("/pdf-thumbnail.jpg")
+  }
+
+  const useGenericUrlThumbnail = () => {
+    setThumbnail("/url-thumbnail.jpg")
+  }
+
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !file.type.startsWith('image/')) return
+
+    setIsGeneratingThumbnail(true)
+
+    try {
+      const img = new Image()
+      const reader = new FileReader()
+
+      reader.onload = (event) => {
+        if (!event.target?.result) return
+        img.src = event.target.result as string
+      }
+
+      img.onload = () => {
+        // Target dimensions: 1200x800 (3:2 aspect ratio)
+        const targetWidth = 1200
+        const targetHeight = 800
+        const targetAspect = targetWidth / targetHeight
+
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+
+        canvas.width = targetWidth
+        canvas.height = targetHeight
+
+        // Calculate dimensions to maintain aspect ratio with crop
+        const imgAspect = img.width / img.height
+        let drawWidth, drawHeight, offsetX, offsetY
+
+        if (imgAspect > targetAspect) {
+          // Image is wider - fit height and crop width
+          drawHeight = img.height
+          drawWidth = img.height * targetAspect
+          offsetX = (img.width - drawWidth) / 2
+          offsetY = 0
+        } else {
+          // Image is taller - fit width and crop height
+          drawWidth = img.width
+          drawHeight = img.width / targetAspect
+          offsetX = 0
+          offsetY = (img.height - drawHeight) / 2
+        }
+
+        // Draw cropped and scaled image
+        ctx.drawImage(
+          img,
+          offsetX, offsetY, drawWidth, drawHeight,
+          0, 0, targetWidth, targetHeight
+        )
+
+        const thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.85)
+        setThumbnail(thumbnailDataUrl)
+        setIsGeneratingThumbnail(false)
+      }
+
+      reader.readAsDataURL(file)
+    } catch (error) {
+      console.error("Failed to process thumbnail:", error)
       setIsGeneratingThumbnail(false)
     }
   }
@@ -207,59 +307,19 @@ export function EditResourceDialog({
             </Select>
           </div>
 
-          {type === "video" && (
-            <div className="space-y-2">
-              <Label htmlFor="edit-duration">Duration</Label>
-              <Input
-                id="edit-duration"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                placeholder="e.g., 45:30"
-              />
-            </div>
-          )}
-
-          {type === "pdf" && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-pages">Page Count</Label>
-                <Input
-                  id="edit-pages"
-                  type="number"
-                  value={pages}
-                  onChange={(e) => setPages(e.target.value)}
-                  placeholder="e.g., 24"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-year">Year</Label>
-                <Input
-                  id="edit-year"
-                  type="number"
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                  placeholder="e.g., 2024"
-                  min={1900}
-                  max={2100}
-                />
-              </div>
-            </div>
-          )}
-
-          {type !== "pdf" && (
-            <div className="space-y-2">
-              <Label htmlFor="edit-year-other">Year</Label>
-              <Input
-                id="edit-year-other"
-                type="number"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                placeholder="e.g., 2024"
-                min={1900}
-                max={2100}
-              />
-            </div>
-          )}
+          {/* Year field for all resource types */}
+          <div className="space-y-2">
+            <Label htmlFor="edit-year">Year</Label>
+            <Input
+              id="edit-year"
+              type="number"
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              placeholder="e.g., 2024"
+              min={1900}
+              max={2100}
+            />
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="edit-summary">Summary / Abstract</Label>
@@ -341,31 +401,102 @@ export function EditResourceDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="edit-thumbnail">Thumbnail URL</Label>
-            <div className="flex gap-2">
-              <Input
-                id="edit-thumbnail"
-                type="url"
-                value={thumbnail}
-                onChange={(e) => setThumbnail(e.target.value)}
-                placeholder="https://..."
-                className="flex-1"
+            <Label>Thumbnail (optional)</Label>
+            <p className="text-xs text-muted-foreground">Ideal size: 1200×800px (3:2 ratio). Images will be auto-cropped to fit.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => document.getElementById('edit-thumbnail-upload')?.click()}
+                disabled={isGeneratingThumbnail}
+                className="bg-transparent"
+              >
+                {isGeneratingThumbnail ? (
+                  <>
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-3 w-3 mr-1" />
+                    Upload
+                  </>
+                )}
+              </Button>
+              <input
+                id="edit-thumbnail-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleThumbnailUpload}
+                className="hidden"
               />
-              {url && (
+              {url && type !== 'video' && (
                 <Button
                   type="button"
                   variant="outline"
-                  size="icon"
+                  size="sm"
                   onClick={generateThumbnail}
                   disabled={isGeneratingThumbnail}
-                  className="bg-transparent shrink-0"
-                  title="Generate thumbnail from screenshot"
+                  className="bg-transparent"
                 >
                   {isGeneratingThumbnail ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <>
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Generating...
+                    </>
                   ) : (
-                    <Camera className="h-4 w-4" />
+                    <>
+                      <Camera className="h-3 w-3 mr-1" />
+                      Screenshot
+                    </>
                   )}
+                </Button>
+              )}
+              {url && type === 'video' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => scrapeUrl(url)}
+                  disabled={isGeneratingThumbnail}
+                  className="bg-transparent"
+                >
+                  {isGeneratingThumbnail ? (
+                    <>
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-3 w-3 mr-1" />
+                      Regenerate
+                    </>
+                  )}
+                </Button>
+              )}
+              {type === 'pdf' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={useGenericPdfThumbnail}
+                  className="bg-transparent"
+                >
+                  <FileText className="h-3 w-3 mr-1" />
+                  Generic PDF
+                </Button>
+              )}
+              {url && type !== 'video' && type !== 'pdf' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={useGenericUrlThumbnail}
+                  className="bg-transparent"
+                >
+                  <Globe className="h-3 w-3 mr-1" />
+                  Generic URL
                 </Button>
               )}
             </div>

@@ -37,14 +37,13 @@ export function Header({ resources, onAddResource, onImport, popularTags }: Head
         </h1>
 
         {/* Subtitle */}
-        <p className="text-base md:text-lg text-muted-foreground text-center max-w-2xl mx-auto mb-6 text-pretty">
+        <p className="text-base md:text-lg text-muted-foreground text-center max-w-2xl mx-auto mb-8 text-pretty">
           Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence.
         </p>
 
-        {/* Action Buttons */}
-        <div className="flex justify-center gap-3">
-          <AddResourceDialog onAddResource={onAddResource} popularTags={popularTags} />
-          <SettingsDialog resources={resources} onImport={onImport} />
+        {/* Add Resource Button */}
+        <div className="flex justify-center">
+          <AddResourceDialog onAddResource={onAddResource} popularTags={popularTags} existingResources={resources} />
         </div>
       </div>
     </header>

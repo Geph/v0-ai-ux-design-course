@@ -7,7 +7,6 @@ const TAG_KEYWORDS: Record<string, string[]> = {
   "Vibe Coding": ["vibe coding", "vibe", "cursor", "copilot", "code generation", "ai coding", "v0"],
   "Examples": ["example", "case study", "showcase", "demo", "sample", "portfolio"],
   "Ethics": ["ethics", "ethical", "bias", "privacy", "consent", "trust", "responsible", "fairness", "harm"],
-  "UXD and AI": ["ux", "user experience", "ai design", "ai ux", "human-ai", "intelligent interface"],
   "Productivity Tools": ["tool", "productivity", "workflow", "automation", "efficiency", "app"],
   "Claude": ["claude", "anthropic"],
   "ChatGPT": ["chatgpt", "gpt", "openai", "gpt-4", "gpt-5"],
@@ -78,9 +77,10 @@ export async function POST(request: NextRequest) {
           const thumbnail = `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`
           const combinedText = `${data.title || ""} ${data.author_name || ""} youtube video tutorial`
           
-          // Try to get duration and description from page scrape (YouTube doesn't include it in oEmbed)
+          // Try to get duration, description, and year from page scrape (YouTube doesn't include it in oEmbed)
           let duration: string | undefined
           let description: string | undefined
+          let year: number | undefined
           try {
             const pageResponse = await fetch(url, {
               headers: {
@@ -107,28 +107,64 @@ export async function POST(request: NextRequest) {
               
               // Try to extract video description for summary
               // YouTube embeds description in JSON data on the page
-              const descriptionMatch = html.match(/"shortDescription":"([^"]*)"/) ||
-                                       html.match(/"description":{"simpleText":"([^"]*)"/)
+              // Try multiple extraction methods as YouTube changes formats
+              let descriptionMatch = html.match(/"shortDescription":"([^"\\]*(\\.[^"\\]*)*)"/);
+              
               if (descriptionMatch) {
                 description = descriptionMatch[1]
                   .replace(/\\n/g, " ")
+                  .replace(/\\r/g, "")
                   .replace(/\\"/g, '"')
+                  .replace(/\\\//g, "/")
                   .replace(/\s+/g, " ")
                   .trim()
-                  .slice(0, 400)
-                if (description.length === 400) {
+                  .slice(0, 500);
+                if (description.length === 500) {
                   description += "..."
                 }
+              } else {
+                // Try alternative format for description
+                descriptionMatch = html.match(/"description":{"simpleText":"([^"]*)"}/)
+                if (descriptionMatch) {
+                  description = descriptionMatch[1]
+                    .replace(/\\n/g, " ")
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .slice(0, 500)
+                  if (description.length === 500) {
+                    description += "..."
+                  }
+                }
+              }
+              
+              // Only use meta description if it's not the generic YouTube message
+              if (!description) {
+                const metaMatch = html.match(/<meta\s+name="description"\s+content="([^"]*)"/)
+                if (metaMatch && !metaMatch[1].includes("Enjoy the videos and music")) {
+                  description = metaMatch[1]
+                    .replace(/\s+/g, " ")
+                    .trim()
+                    .slice(0, 500)
+                  if (description.length === 500) {
+                    description += "..."
+                  }
+                }
+              }
+              
+              // Extract publish date/year
+              const dateMatch = html.match(/"publishDate":"(\d{4})-\d{2}-\d{2}"/) ||
+                               html.match(/"uploadDate":"(\d{4})-\d{2}-\d{2}"/) ||
+                               html.match(/"datePublished":"(\d{4})-\d{2}-\d{2}"/)
+              if (dateMatch) {
+                year = parseInt(dateMatch[1], 10)
               }
             }
           } catch (e) {
-            // Duration/description extraction failed, continue without it
+            // Duration/description/year extraction failed, continue without it
           }
           
-          // Build a better summary from description or fallback
-          const summary = description && description.length > 20 
-            ? description 
-            : `Video by ${data.author_name || "Unknown"} on YouTube.`
+          // Use description as summary, or leave empty if not found (let user fill in manually)
+          const summary = description || ""
           
           // Include description in tag extraction for better suggestions
           const fullText = `${data.title || ""} ${data.author_name || ""} ${description || ""} youtube video tutorial`
@@ -141,6 +177,7 @@ export async function POST(request: NextRequest) {
             suggestedTags: extractTags(fullText),
             type: "video",
             duration,
+            year,
           })
         }
       } catch (e) {
@@ -188,21 +225,33 @@ export async function POST(request: NextRequest) {
     }
 
     // For other URLs, fetch and parse the HTML
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; UXAILibraryBot/1.0)",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      },
-      next: { revalidate: 3600 },
-    })
-
-    if (!response.ok) {
+    let response
+    try {
+      response = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; UXAILibraryBot/1.0)",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+        next: { revalidate: 3600 },
+      })
+    } catch (fetchError) {
+      // Fetch failed (network error, CORS, etc.)
+      // Return empty data so user can fill in manually
       return NextResponse.json({ 
-        error: "Failed to fetch URL",
         title: "",
         summary: "",
         suggestedTags: [],
-      }, { status: 200 }) // Return 200 with empty data so UI can continue
+      }, { status: 200 })
+    }
+
+    if (!response.ok) {
+      // Site blocked access (403), requires login, or other error
+      // Return empty data so user can fill in manually
+      return NextResponse.json({ 
+        title: "",
+        summary: "",
+        suggestedTags: [],
+      }, { status: 200 })
     }
 
     const contentType = response.headers.get("content-type") || ""

@@ -21,9 +21,10 @@ const MAX_FILE_SIZE = 30 * 1024 * 1024 // 30MB in bytes
 interface AddResourceDialogProps {
   onAddResource: (resource: Resource) => void
   popularTags: string[]
+  existingResources?: Resource[]
 }
 
-export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDialogProps) {
+export function AddResourceDialog({ onAddResource, popularTags, existingResources = [] }: AddResourceDialogProps) {
   const [open, setOpen] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
   const [url, setUrl] = useState("")
@@ -34,8 +35,6 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
   const [thumbnail, setThumbnail] = useState("")
-  const [duration, setDuration] = useState("")
-  const [pages, setPages] = useState("")
   const [year, setYear] = useState("")
   const [showForm, setShowForm] = useState(false)
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
@@ -43,6 +42,7 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
   const [isScrapingUrl, setIsScrapingUrl] = useState(false)
   const [scrapedSuccessfully, setScrapedSuccessfully] = useState(false)
   const [isGeneratingThumbnail, setIsGeneratingThumbnail] = useState(false)
+  const [duplicateWarning, setDuplicateWarning] = useState<Resource | null>(null)
 
   const resetForm = () => {
     setUrl("")
@@ -53,8 +53,6 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
     setTags([])
     setNewTag("")
     setThumbnail("")
-    setDuration("")
-    setPages("")
     setYear("")
     setShowForm(false)
     setUploadedFile(null)
@@ -62,12 +60,44 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
     setIsScrapingUrl(false)
     setScrapedSuccessfully(false)
     setIsGeneratingThumbnail(false)
+    setDuplicateWarning(null)
+  }
+
+  const checkForDuplicates = (checkTitle: string, checkUrl: string): Resource | null => {
+    if (!checkTitle && !checkUrl) return null
+    
+    const titleLower = checkTitle.toLowerCase().trim()
+    const urlNormalized = checkUrl.toLowerCase().trim()
+    
+    return existingResources.find(resource => {
+      const existingTitleLower = resource.title.toLowerCase().trim()
+      const existingUrlNormalized = resource.url.toLowerCase().trim()
+      
+      // Check for exact title match or exact URL match
+      return (titleLower && titleLower === existingTitleLower) || 
+             (urlNormalized && urlNormalized === existingUrlNormalized && urlNormalized !== "#")
+    }) || null
+  }
+
+  const formatTag = (tag: string): string => {
+    const trimmed = tag.trim()
+    
+    // If the tag is all uppercase (like "RAG" or "AI"), keep it as-is
+    if (trimmed === trimmed.toUpperCase() && trimmed.length > 1) {
+      return trimmed
+    }
+    
+    // Otherwise, convert to title case (capitalize first letter of each word)
+    return trimmed
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ')
   }
 
   const handleAddTag = (tag: string) => {
-    const trimmed = tag.trim()
-    if (trimmed && !tags.includes(trimmed)) {
-      setTags([...tags, trimmed])
+    const formatted = formatTag(tag)
+    if (formatted && !tags.includes(formatted)) {
+      setTags([...tags, formatted])
     }
     setNewTag("")
   }
@@ -107,8 +137,9 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
           setTags((prevTags) => {
             const newTags = [...prevTags]
             for (const tag of data.suggestedTags) {
-              if (!newTags.includes(tag)) {
-                newTags.push(tag)
+              const formatted = formatTag(tag)
+              if (!newTags.includes(formatted)) {
+                newTags.push(formatted)
               }
             }
             return newTags
@@ -117,13 +148,13 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
         if (data.type) {
           setDetectedType(data.type)
         }
-        if (data.duration) {
-          setDuration(data.duration)
+        if (data.year) {
+          setYear(data.year.toString())
         }
         setScrapedSuccessfully(true)
       }
     } catch (error) {
-      console.error("Failed to scrape URL:", error)
+      // Silently fail - some sites block scraping, user can fill in manually
     } finally {
       setIsScrapingUrl(false)
     }
@@ -148,22 +179,128 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
   }
 
   const generateThumbnail = async () => {
-    if (!url) return
+    if (!url && !uploadedFile) return
     
     setIsGeneratingThumbnail(true)
     
     try {
-      // For PDFs, use a static thumbnail with PDF icon
-      if (type === "pdf") {
-        setThumbnail("/pdf-thumbnail.jpg")
-      } else {
-        // For other types, use screenshot service
+      // For uploaded files (images), create a preview from the file
+      if (uploadedFile && uploadedFile.type.startsWith('image/')) {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          if (e.target?.result) {
+            setThumbnail(e.target.result as string)
+          }
+        }
+        reader.readAsDataURL(uploadedFile)
+      }
+      // For uploaded PDFs, generate thumbnail from first page
+      else if (uploadedFile && uploadedFile.type === 'application/pdf') {
+        const pdfjsLib = await import('pdfjs-dist')
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+        
+        const arrayBuffer = await uploadedFile.arrayBuffer()
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+        const page = await pdf.getPage(1)
+        
+        const viewport = page.getViewport({ scale: 1.5 })
+        const canvas = document.createElement('canvas')
+        const context = canvas.getContext('2d')
+        
+        if (context) {
+          canvas.height = viewport.height
+          canvas.width = viewport.width
+          
+          await page.render({
+            canvasContext: context,
+            viewport: viewport
+          }).promise
+          
+          const thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.8)
+          setThumbnail(thumbnailDataUrl)
+        }
+      }
+      // For URL-based resources (not YouTube - those get scraped automatically)
+      else if (url && !url.startsWith('file://') && detectedType !== 'video') {
         const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
         setThumbnail(thumbnailUrl)
       }
     } catch (error) {
       console.error("Failed to generate thumbnail:", error)
     } finally {
+      setIsGeneratingThumbnail(false)
+    }
+  }
+
+  const useGenericPdfThumbnail = () => {
+    setThumbnail("/pdf-thumbnail.jpg")
+  }
+
+  const useGenericUrlThumbnail = () => {
+    setThumbnail("/url-thumbnail.jpg")
+  }
+
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !file.type.startsWith('image/')) return
+
+    setIsGeneratingThumbnail(true)
+
+    try {
+      const img = new Image()
+      const reader = new FileReader()
+
+      reader.onload = (event) => {
+        if (!event.target?.result) return
+        img.src = event.target.result as string
+      }
+
+      img.onload = () => {
+        // Target dimensions: 1200x800 (3:2 aspect ratio)
+        const targetWidth = 1200
+        const targetHeight = 800
+        const targetAspect = targetWidth / targetHeight
+
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+
+        canvas.width = targetWidth
+        canvas.height = targetHeight
+
+        // Calculate dimensions to maintain aspect ratio with crop
+        const imgAspect = img.width / img.height
+        let drawWidth, drawHeight, offsetX, offsetY
+
+        if (imgAspect > targetAspect) {
+          // Image is wider - fit height and crop width
+          drawHeight = img.height
+          drawWidth = img.height * targetAspect
+          offsetX = (img.width - drawWidth) / 2
+          offsetY = 0
+        } else {
+          // Image is taller - fit width and crop height
+          drawWidth = img.width
+          drawHeight = img.width / targetAspect
+          offsetX = 0
+          offsetY = (img.height - drawHeight) / 2
+        }
+
+        // Draw cropped and scaled image
+        ctx.drawImage(
+          img,
+          offsetX, offsetY, drawWidth, drawHeight,
+          0, 0, targetWidth, targetHeight
+        )
+
+        const thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.85)
+        setThumbnail(thumbnailDataUrl)
+        setIsGeneratingThumbnail(false)
+      }
+
+      reader.readAsDataURL(file)
+    } catch (error) {
+      console.error("Failed to process thumbnail:", error)
       setIsGeneratingThumbnail(false)
     }
   }
@@ -190,7 +327,7 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
       // Remove file extension from title
       const nameWithoutExt = file.name.replace(/\.(png|jpg|jpeg|gif|webp|svg)$/i, "")
       setTitle(nameWithoutExt)
-      setUrl("")
+      setUrl("") // Clear URL since we're using a file
       setShowForm(true)
     } else {
       setFileError("Supported files: PDF and images (PNG, JPG, GIF, WebP, SVG). For videos and links, please use a URL.")
@@ -244,33 +381,70 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // Check for duplicates first
+    const resourceUrl = url || "#"
+    const duplicate = checkForDuplicates(title, resourceUrl)
+    
+    if (duplicate) {
+      setDuplicateWarning(duplicate)
+      return
+    }
+
     let localPath: string | undefined
-    let resourceUrl = url || "#"
+    let finalResourceUrl = resourceUrl
 
     // If a file was uploaded, create a blob URL (in a real app, this would upload to server)
     if (uploadedFile) {
       // Create a blob URL for the uploaded PDF
       // In a production app, you would upload this to a server/storage
       localPath = URL.createObjectURL(uploadedFile)
-      resourceUrl = localPath
+      finalResourceUrl = localPath
     }
 
     const resource: Resource = {
       id: generateId(),
       title: title || "Untitled Resource",
       type: detectedType,
-      url: resourceUrl,
+      url: finalResourceUrl,
       thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
       summary: summary || "No description provided.",
       tags: tags,
       dateAdded: new Date().toISOString().split("T")[0],
       author: author ? author.slice(0, 160) : undefined,
-      duration: detectedType === "video" && duration ? duration : undefined,
-      pages: detectedType === "pdf" && pages ? parseInt(pages, 10) : undefined,
       year: year ? parseInt(year, 10) : undefined,
       localPath: localPath,
     }
 
+    onAddResource(resource)
+    resetForm()
+    setOpen(false)
+  }
+
+  const handleProceedWithDuplicate = () => {
+    let localPath: string | undefined
+    let finalResourceUrl = url || "#"
+
+    // If a file was uploaded, create a blob URL
+    if (uploadedFile) {
+      localPath = URL.createObjectURL(uploadedFile)
+      finalResourceUrl = localPath
+    }
+
+    const resource: Resource = {
+      id: generateId(),
+      title: title || "Untitled Resource",
+      type: detectedType,
+      url: finalResourceUrl,
+      thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
+      summary: summary || "No description provided.",
+      tags: tags,
+      dateAdded: new Date().toISOString().split("T")[0],
+      author: author ? author.slice(0, 160) : undefined,
+      year: year ? parseInt(year, 10) : undefined,
+      localPath: localPath,
+    }
+
+    setDuplicateWarning(null)
     onAddResource(resource)
     resetForm()
     setOpen(false)
@@ -507,59 +681,19 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
                 </div>
               )}
 
-              {detectedType === "video" && (
-                <div className="space-y-2">
-                  <Label htmlFor="duration">Duration</Label>
-                  <Input
-                    id="duration"
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    placeholder="e.g., 45:30"
-                  />
-                </div>
-              )}
-
-              {detectedType === "pdf" && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="pages">Page Count</Label>
-                    <Input
-                      id="pages"
-                      type="number"
-                      value={pages}
-                      onChange={(e) => setPages(e.target.value)}
-                      placeholder="e.g., 24"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="year">Year</Label>
-                    <Input
-                      id="year"
-                      type="number"
-                      value={year}
-                      onChange={(e) => setYear(e.target.value)}
-                      placeholder="e.g., 2024"
-                      min={1900}
-                      max={2100}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {detectedType !== "pdf" && (
-                <div className="space-y-2">
-                  <Label htmlFor="year-other">Year</Label>
-                  <Input
-                    id="year-other"
-                    type="number"
-                    value={year}
-                    onChange={(e) => setYear(e.target.value)}
-                    placeholder="e.g., 2024"
-                    min={1900}
-                    max={2100}
-                  />
-                </div>
-              )}
+              {/* Year field for all resource types */}
+              <div className="space-y-2">
+                <Label htmlFor="year">Year</Label>
+                <Input
+                  id="year"
+                  type="number"
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  placeholder="e.g., 2024"
+                  min={1900}
+                  max={2100}
+                />
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="summary">Summary / Abstract</Label>
@@ -640,41 +774,112 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="thumbnail">Thumbnail URL (optional)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="thumbnail"
-                    type="url"
-                    value={thumbnail}
-                    onChange={(e) => setThumbnail(e.target.value)}
-                    placeholder="https://..."
-                    className="flex-1"
-                  />
-                  {url && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={generateThumbnail}
-                      disabled={isGeneratingThumbnail}
-                      className="bg-transparent shrink-0"
-                      title="Generate thumbnail from screenshot"
-                    >
-                      {isGeneratingThumbnail ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Camera className="h-4 w-4" />
-                      )}
-                    </Button>
-                  )}
-                </div>
-                {thumbnail && (
-                  <div className="mt-2 border rounded-lg overflow-hidden">
-                    <img src={thumbnail} alt="Thumbnail preview" className="w-full h-32 object-cover" />
-                  </div>
+          <div className="space-y-2">
+            <Label>Thumbnail (optional)</Label>
+            <p className="text-xs text-muted-foreground">Ideal size: 1200×800px (3:2 ratio). Images will be auto-cropped to fit.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => document.getElementById('thumbnail-upload')?.click()}
+                disabled={isGeneratingThumbnail}
+                className="bg-transparent"
+              >
+                {isGeneratingThumbnail ? (
+                  <>
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-3 w-3 mr-1" />
+                    Upload
+                  </>
                 )}
+              </Button>
+              <input
+                id="thumbnail-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleThumbnailUpload}
+                className="hidden"
+              />
+              {(url || uploadedFile) && detectedType !== 'video' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={generateThumbnail}
+                  disabled={isGeneratingThumbnail}
+                  className="bg-transparent"
+                >
+                  {isGeneratingThumbnail ? (
+                    <>
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-3 w-3 mr-1" />
+                      Screenshot
+                    </>
+                  )}
+                </Button>
+              )}
+              {url && detectedType === 'video' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => scrapeUrl(url)}
+                  disabled={isScrapingUrl}
+                  className="bg-transparent"
+                >
+                  {isScrapingUrl ? (
+                    <>
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-3 w-3 mr-1" />
+                      Regenerate
+                    </>
+                  )}
+                </Button>
+              )}
+              {(uploadedFile?.type === 'application/pdf' || detectedType === 'pdf') && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={useGenericPdfThumbnail}
+                  className="bg-transparent"
+                >
+                  <FileText className="h-3 w-3 mr-1" />
+                  Generic PDF
+                </Button>
+              )}
+              {url && !uploadedFile && detectedType !== 'video' && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={useGenericUrlThumbnail}
+                  className="bg-transparent"
+                >
+                  <Globe className="h-3 w-3 mr-1" />
+                  Generic URL
+                </Button>
+              )}
+            </div>
+            {thumbnail && (
+              <div className="mt-2 border rounded-lg overflow-hidden">
+                <img src={thumbnail} alt="Thumbnail preview" className="w-full h-32 object-cover" />
               </div>
+            )}
+          </div>
 
               <div className="flex gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={resetForm} className="flex-1 bg-transparent">
@@ -689,6 +894,53 @@ export function AddResourceDialog({ onAddResource, popularTags }: AddResourceDia
             </form>
           )}
         </div>
+
+        {/* Duplicate Warning Dialog */}
+        {duplicateWarning && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-card rounded-lg shadow-xl max-w-md mx-4 p-6 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="h-6 w-6 text-destructive" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Duplicate Resource Detected</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    A resource with the title "{duplicateWarning.title}" already exists in your library. 
+                  </p>
+                </div>
+              </div>
+              
+              <div className="bg-muted/50 rounded-lg p-3 text-sm space-y-1">
+                <div className="font-medium text-foreground">Existing Resource:</div>
+                <div className="text-muted-foreground">{duplicateWarning.title}</div>
+                {duplicateWarning.url && duplicateWarning.url !== "#" && (
+                  <div className="text-xs text-muted-foreground truncate mt-2">{duplicateWarning.url}</div>
+                )}
+              </div>
+
+              <p className="text-sm text-muted-foreground">
+                Do you want to add this anyway? The ratings from both resources will be combined.
+              </p>
+
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setDuplicateWarning(null)}
+                  className="flex-1 bg-transparent"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleProceedWithDuplicate}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  Add Anyway
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )
