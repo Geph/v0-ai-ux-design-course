@@ -139,25 +139,18 @@ export function EditResourceDialog({
   }
 
   const generateThumbnail = async () => {
-    console.log("[v0] generateThumbnail called, url:", url, "type:", type)
-    if (!url) {
-      console.log("[v0] No URL provided, returning")
+    if (!url || url.startsWith('blob:')) {
+      alert("Screenshot feature only works with web URLs, not uploaded files. Please use Upload or Generic thumbnail options instead.")
       return
     }
     
     setIsGeneratingThumbnail(true)
     
     try {
-      // For URL-based resources (not videos - those use scraped thumbnails)
-      if (type !== "video") {
-        const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
-        console.log("[v0] Generated thumbnail URL:", thumbnailUrl)
-        setThumbnail(thumbnailUrl)
-      } else {
-        console.log("[v0] Type is video, skipping screenshot generation")
-      }
+      const thumbnailUrl = `https://image.thum.io/get/width/1200/crop/800/${encodeURIComponent(url)}`
+      setThumbnail(thumbnailUrl)
     } catch (error) {
-      console.error("[v0] Failed to generate thumbnail:", error)
+      console.error("Failed to generate thumbnail:", error)
     } finally {
       setIsGeneratingThumbnail(false)
     }
@@ -445,7 +438,7 @@ export function EditResourceDialog({
                 onChange={handleThumbnailUpload}
                 className="hidden"
               />
-              {url && type !== 'video' && (
+              {url && type !== 'video' && !url.startsWith('blob:') && (
                 <Button
                   type="button"
                   variant="outline"
