@@ -128,14 +128,21 @@ export function SettingsDialog({ resources, onImport }: SettingsDialogProps) {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file) {
+      console.log("[v0] No file selected")
+      return
+    }
 
     try {
+      console.log("[v0] Importing file:", file.name)
       const text = await file.text()
+      console.log("[v0] File text length:", text.length)
       const importedResources = xmlToResources(text)
+      console.log("[v0] Parsed resources count:", importedResources.length)
       onImport(importedResources)
+      alert(`Successfully imported ${importedResources.length} resources!`)
     } catch (err) {
-      console.error("Failed to import XML:", err)
+      console.error("[v0] Failed to import XML:", err)
       alert("Failed to import XML file. Please check the format.")
     }
 
