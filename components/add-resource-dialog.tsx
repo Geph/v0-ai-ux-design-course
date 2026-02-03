@@ -224,7 +224,7 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
       setUploadedFile(file)
       setDetectedType("pdf")
       setTitle(file.name.replace(".pdf", ""))
-      setUrl(`file://${file.name}`) // Set placeholder URL for uploaded file
+      setUrl("") // Clear URL since we're using a file
       setShowForm(true)
     } else if (imageTypes.includes(file.type)) {
       setUploadedFile(file)
@@ -232,7 +232,7 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
       // Remove file extension from title
       const nameWithoutExt = file.name.replace(/\.(png|jpg|jpeg|gif|webp|svg)$/i, "")
       setTitle(nameWithoutExt)
-      setUrl(`file://${file.name}`) // Set placeholder URL for uploaded file
+      setUrl("") // Clear URL since we're using a file
       setShowForm(true)
     } else {
       setFileError("Supported files: PDF and images (PNG, JPG, GIF, WebP, SVG). For videos and links, please use a URL.")
