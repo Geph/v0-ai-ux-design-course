@@ -137,10 +137,10 @@ export async function POST(request: NextRequest) {
                 }
               }
               
-              // If still no description, try to get it from the meta description tag
+              // Only use meta description if it's not the generic YouTube message
               if (!description) {
                 const metaMatch = html.match(/<meta\s+name="description"\s+content="([^"]*)"/)
-                if (metaMatch) {
+                if (metaMatch && !metaMatch[1].includes("Enjoy the videos and music")) {
                   description = metaMatch[1]
                     .replace(/\s+/g, " ")
                     .trim()

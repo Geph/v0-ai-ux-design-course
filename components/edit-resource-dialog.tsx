@@ -36,8 +36,6 @@ export function EditResourceDialog({
   const [tags, setTags] = useState<string[]>([])
   const [newTag, setNewTag] = useState("")
   const [thumbnail, setThumbnail] = useState("")
-  const [duration, setDuration] = useState("")
-  const [pages, setPages] = useState("")
   const [year, setYear] = useState("")
   const [url, setUrl] = useState("")
   const [type, setType] = useState<ResourceType>("link")
@@ -51,8 +49,6 @@ export function EditResourceDialog({
       setSummary(resource.summary)
       setTags(resource.tags)
       setThumbnail(resource.thumbnail)
-      setDuration(resource.duration || "")
-      setPages(resource.pages?.toString() || "")
       setYear(resource.year?.toString() || "")
       setUrl(resource.url)
       setType(resource.type)
@@ -105,8 +101,6 @@ export function EditResourceDialog({
       summary: summary || "No description provided.",
       tags,
       thumbnail: thumbnail || resource.thumbnail,
-      duration: type === "video" && duration ? duration : undefined,
-      pages: type === "pdf" && pages ? parseInt(pages, 10) : undefined,
       year: year ? parseInt(year, 10) : undefined,
       url: url || resource.url,
       type,
@@ -222,59 +216,19 @@ export function EditResourceDialog({
             </Select>
           </div>
 
-          {type === "video" && (
-            <div className="space-y-2">
-              <Label htmlFor="edit-duration">Duration</Label>
-              <Input
-                id="edit-duration"
-                value={duration}
-                onChange={(e) => setDuration(e.target.value)}
-                placeholder="e.g., 45:30"
-              />
-            </div>
-          )}
-
-          {type === "pdf" && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-pages">Page Count</Label>
-                <Input
-                  id="edit-pages"
-                  type="number"
-                  value={pages}
-                  onChange={(e) => setPages(e.target.value)}
-                  placeholder="e.g., 24"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-year">Year</Label>
-                <Input
-                  id="edit-year"
-                  type="number"
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
-                  placeholder="e.g., 2024"
-                  min={1900}
-                  max={2100}
-                />
-              </div>
-            </div>
-          )}
-
-          {type !== "pdf" && (
-            <div className="space-y-2">
-              <Label htmlFor="edit-year-other">Year</Label>
-              <Input
-                id="edit-year-other"
-                type="number"
-                value={year}
-                onChange={(e) => setYear(e.target.value)}
-                placeholder="e.g., 2024"
-                min={1900}
-                max={2100}
-              />
-            </div>
-          )}
+          {/* Year field for all resource types */}
+          <div className="space-y-2">
+            <Label htmlFor="edit-year">Year</Label>
+            <Input
+              id="edit-year"
+              type="number"
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              placeholder="e.g., 2024"
+              min={1900}
+              max={2100}
+            />
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="edit-summary">Summary / Abstract</Label>
