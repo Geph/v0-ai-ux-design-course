@@ -234,8 +234,9 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
+      // Site blocked access (403), requires login, or other error
+      // Return empty data so user can fill in manually
       return NextResponse.json({ 
-        error: "Failed to fetch URL",
         title: "",
         summary: "",
         suggestedTags: [],
