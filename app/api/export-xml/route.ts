@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import type { Resource } from "@/lib/resources-data"
 
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
 function resourcesToXml(resources: Resource[]): string {
   const escapeXml = (str: string) => {
     return str

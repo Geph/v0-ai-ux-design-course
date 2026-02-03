@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 
+export const runtime = "nodejs"
+export const dynamic = "force-dynamic"
+
 // Common keywords for tag suggestions based on the course's popular tags
 const TAG_KEYWORDS: Record<string, string[]> = {
   "User research": ["research", "user research", "usability", "testing", "interview", "survey", "ethnograph", "contextual inquiry", "persona", "journey map"],
