@@ -401,7 +401,14 @@ export function EditResourceDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Thumbnail (optional)</Label>
+            <Label htmlFor="edit-thumbnail">Thumbnail URL (optional)</Label>
+            <Input
+              id="edit-thumbnail"
+              type="url"
+              value={thumbnail}
+              onChange={(e) => setThumbnail(e.target.value)}
+              placeholder="https://... or leave blank"
+            />
             <p className="text-xs text-muted-foreground">Ideal size: 1200×800px (3:2 ratio). Images will be auto-cropped to fit.</p>
             <div className="flex flex-wrap gap-2">
               <Button
@@ -449,28 +456,6 @@ export function EditResourceDialog({
                     <>
                       <Camera className="h-3 w-3 mr-1" />
                       Screenshot
-                    </>
-                  )}
-                </Button>
-              )}
-              {url && type === 'video' && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => scrapeUrl(url)}
-                  disabled={isGeneratingThumbnail}
-                  className="bg-transparent"
-                >
-                  {isGeneratingThumbnail ? (
-                    <>
-                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    <>
-                      <Camera className="h-3 w-3 mr-1" />
-                      Regenerate
                     </>
                   )}
                 </Button>
