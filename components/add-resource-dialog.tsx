@@ -25,12 +25,25 @@ function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = () => {
-      const result = reader.result as string
-      // Remove the data URL prefix to get just the base64 string
-      const base64 = result.split(",")[1]
-      resolve(base64)
+      try {
+        const result = reader.result as string
+        // Remove the data URL prefix to get just the base64 string
+        const base64Parts = result.split(",")
+        if (base64Parts.length < 2) {
+          reject(new Error("Invalid file read result"))
+          return
+        }
+        const base64 = base64Parts[1]
+        if (!base64 || typeof base64 !== 'string') {
+          reject(new Error("Failed to extract base64 data"))
+          return
+        }
+        resolve(base64)
+      } catch (error) {
+        reject(error)
+      }
     }
-    reader.onerror = reject
+    reader.onerror = () => reject(new Error("File read failed"))
     reader.readAsDataURL(file)
   })
 }
@@ -415,11 +428,16 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
   if (uploadedFile) {
     try {
       fileData = await fileToBase64(uploadedFile)
+      if (!fileData || typeof fileData !== 'string') {
+        console.error("[v0] Failed to convert file to base64: invalid result")
+        alert("Failed to process uploaded file")
+        return
+      }
       fileMimeType = uploadedFile.type
       // Create a data URL for the resource
       finalResourceUrl = `data:${fileMimeType};base64,${fileData}`
     } catch (error) {
-      console.error("Failed to convert file to base64:", error)
+      console.error("[v0] Failed to convert file to base64:", error)
       alert("Failed to process uploaded file")
       return
     }
@@ -454,10 +472,15 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
   if (uploadedFile) {
     try {
       fileData = await fileToBase64(uploadedFile)
+      if (!fileData || typeof fileData !== 'string') {
+        console.error("[v0] Failed to convert file to base64: invalid result")
+        alert("Failed to process uploaded file")
+        return
+      }
       fileMimeType = uploadedFile.type
       finalResourceUrl = `data:${fileMimeType};base64,${fileData}`
     } catch (error) {
-      console.error("Failed to convert file to base64:", error)
+      console.error("[v0] Failed to convert file to base64:", error)
       alert("Failed to process uploaded file")
       return
     }
