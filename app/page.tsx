@@ -7,7 +7,7 @@ import { SettingsDialog } from "@/components/settings-dialog"
 import { TagFilter } from "@/components/tag-filter"
 import { ResourceGallery } from "@/components/resource-gallery"
 import { EditResourceDialog } from "@/components/edit-resource-dialog"
-import { resources as initialResources, type Resource, type ResourceType, getPopularTags } from "@/lib/resources-data"
+import { resources as initialResources, type Resource, type ResourceType, type TagWithCount, getPopularTags } from "@/lib/resources-data"
 import { xmlToResources, resourcesToXml } from "@/lib/xml-utils"
 import { colorPalettes, applyPalette, PALETTE_STORAGE_KEY, THEME_STORAGE_KEY } from "@/lib/color-palettes"
 import { SlidersHorizontal, X, ChevronDown, ChevronUp } from "lucide-react"
@@ -151,7 +151,10 @@ export default function ResourceLibrary() {
     setResources((prev) => [resource, ...prev])
   }
 
-  const handleImport = (importedResources: Resource[]) => {
+  const handleDeleteAllResources = () => {
+    setResources([])
+    localStorage.removeItem(STORAGE_KEY)
+  }
     setResources(importedResources)
   }
 
@@ -200,6 +203,7 @@ export default function ResourceLibrary() {
       <SettingsDialog 
         resources={resources} 
         onImport={handleImport}
+        onDeleteAllResources={handleDeleteAllResources}
         onAppNameChange={setAppName}
         onAppDescriptionChange={setAppDescription}
         onFooterTextChange={setFooterText}

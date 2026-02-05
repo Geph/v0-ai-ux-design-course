@@ -67,15 +67,15 @@ export const resources: Resource[] = [
 ]
 
 // Base popular tags are now dynamically generated from actual resource tags
-export const BASE_POPULAR_TAGS: string[] = []
 
-// Extract all unique tags from resources
-export const allTags = Array.from(
-  new Set(resources.flatMap(resource => resource.tags))
-).sort()
+export interface TagWithCount {
+  tag: string
+  count: number
+}
 
 // Get popular tags - generated from actual tags used in the library, sorted by frequency
-export const getPopularTags = (resourceList: Resource[] = resources, limit: number = 20): string[] => {
+// Only returns tags with more than 3 items
+export const getPopularTags = (resourceList: Resource[] = resources, limit: number = 20): TagWithCount[] => {
   // Count tag frequency in resources
   const tagCounts: Record<string, number> = {}
   resourceList.forEach(resource => {
@@ -84,9 +84,10 @@ export const getPopularTags = (resourceList: Resource[] = resources, limit: numb
     })
   })
   
-  // Sort by frequency and return top tags
+  // Filter tags with more than 3 items, sort by frequency and return top tags
   return Object.entries(tagCounts)
+    .filter(([_, count]) => count > 3)
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit)
-    .map(([tag]) => tag)
+    .map(([tag, count]) => ({ tag, count }))
 }

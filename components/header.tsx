@@ -3,13 +3,13 @@
 import { BookOpen } from "lucide-react"
 import { AddResourceDialog } from "./add-resource-dialog"
 import { SettingsDialog } from "./settings-dialog"
-import type { Resource } from "@/lib/resources-data"
+import type { Resource, TagWithCount } from "@/lib/resources-data"
 
 interface HeaderProps {
   resources: Resource[]
   onAddResource: (resource: Resource) => void
   onImport: (resources: Resource[]) => void
-  popularTags: string[]
+  popularTags: TagWithCount[]
   appName?: string
   appDescription?: string
 }

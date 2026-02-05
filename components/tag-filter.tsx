@@ -2,9 +2,10 @@
 
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
+import type { TagWithCount } from "@/lib/resources-data"
 
 interface TagFilterProps {
-  tags: string[]
+  tags: TagWithCount[]
   selectedTags: string[]
   onTagToggle: (tag: string) => void
 }
@@ -23,13 +24,13 @@ const tagColors: Record<number, string> = {
 export function TagFilter({ tags, selectedTags, onTagToggle }: TagFilterProps) {
   return (
     <div className="flex flex-wrap justify-center gap-2">
-      {tags.map((tag, index) => {
-        const isSelected = selectedTags.includes(tag)
+      {tags.map((tagData, index) => {
+        const isSelected = selectedTags.includes(tagData.tag)
         const colorIndex = index % Object.keys(tagColors).length
         
         return (
           <Badge
-            key={tag}
+            key={tagData.tag}
             variant="secondary"
             className={cn(
               "cursor-pointer px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 border-2",
@@ -37,14 +38,15 @@ export function TagFilter({ tags, selectedTags, onTagToggle }: TagFilterProps) {
                 ? `${tagColors[colorIndex]} border-transparent shadow-md scale-105` 
                 : "bg-card text-foreground border-border hover:border-primary/50 hover:bg-secondary"
             )}
-            onClick={() => onTagToggle(tag)}
+            onClick={() => onTagToggle(tagData.tag)}
           >
-            {tag}
-            {isSelected && (
-              <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-white/30 text-xs">
-                ×
-              </span>
-            )}
+            {tagData.tag}
+            <span className={cn(
+              "ml-1.5 inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full text-xs font-semibold",
+              isSelected ? "bg-white/30" : "bg-muted"
+            )}>
+              {isSelected ? '×' : tagData.count}
+            </span>
           </Badge>
         )
       })}

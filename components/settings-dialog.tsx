@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Settings, Download, Upload, Check, Sun, Moon, X } from "lucide-react"
+import { Settings, Download, Upload, Check, Sun, Moon, X, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { exportXmlFile, xmlToResources } from "@/lib/xml-utils"
 import { colorPalettes, applyPalette, PALETTE_STORAGE_KEY, THEME_STORAGE_KEY, type ColorPalette } from "@/lib/color-palettes"
@@ -20,6 +20,7 @@ const APP_FOOTER_STORAGE_KEY = "ux-ai-app-footer"
 interface SettingsDialogProps {
   resources: Resource[]
   onImport: (resources: Resource[]) => void
+  onDeleteAllResources?: () => void
   onAppNameChange?: (name: string) => void
   onAppDescriptionChange?: (description: string) => void
   onFooterTextChange?: (text: string) => void
@@ -31,6 +32,7 @@ interface SettingsDialogProps {
 export function SettingsDialog({ 
   resources, 
   onImport,
+  onDeleteAllResources,
   onAppNameChange,
   onAppDescriptionChange,
   onFooterTextChange,
@@ -284,6 +286,28 @@ export function SettingsDialog({
             </Button>
             <p className="text-xs text-muted-foreground">
               Import or export your resource library. Save as default to use these resources when deployed.
+            </p>
+          </div>
+
+          {/* Delete All Resources */}
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-sm font-medium">Danger Zone</Label>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={() => {
+                if (window.confirm("Are you sure you want to delete all resources? This action cannot be undone.")) {
+                  onDeleteAllResources?.()
+                  setOpen(false)
+                }
+              }}
+              className="w-full gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete All Resources
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Permanently delete all resources in the library.
             </p>
           </div>
         </div>
