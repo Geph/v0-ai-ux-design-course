@@ -3,15 +3,16 @@
 import { BookOpen } from "lucide-react"
 import { AddResourceDialog } from "./add-resource-dialog"
 import { SettingsDialog } from "./settings-dialog"
-import type { Resource } from "@/lib/resources-data"
+import type { Resource, TagWithCount } from "@/lib/resources-data"
 
 interface HeaderProps {
   resources: Resource[]
   onAddResource: (resource: Resource) => void
   onImport: (resources: Resource[]) => void
-  popularTags: string[]
+  popularTags: TagWithCount[]
   appName?: string
   appDescription?: string
+  appVersion?: string
 }
 
 export function Header({ 
@@ -20,7 +21,8 @@ export function Header({
   onImport, 
   popularTags,
   appName = "User Experience Design with AI",
-  appDescription = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence."
+  appDescription = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence.",
+  appVersion = "v0.3.0"
 }: HeaderProps) {
   return (
     <header className="relative overflow-hidden">
@@ -46,8 +48,11 @@ export function Header({
         </h1>
 
         {/* Subtitle */}
-        <p className="text-base md:text-lg text-muted-foreground text-center max-w-2xl mx-auto mb-8 text-pretty">
+        <p className="text-base md:text-lg text-muted-foreground text-center max-w-2xl mx-auto mb-2 text-pretty">
           {appDescription}
+        </p>
+        <p className="text-xs text-muted-foreground/60 text-center mb-8">
+          {appVersion}
         </p>
 
         {/* Add Resource Button */}

@@ -211,7 +211,7 @@ export function EditResourceDialog({
     }
   }
 
-  const suggestedTags = popularTags.filter(t => !tags.includes(t))
+  const suggestedTags = popularTags.filter(t => !tags.includes(t.tag))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -366,15 +366,15 @@ export function EditResourceDialog({
               <div className="space-y-2">
                 <p className="text-xs text-muted-foreground">Popular tags:</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {suggestedTags.slice(0, 6).map((tag) => (
+                  {suggestedTags.slice(0, 6).map((tagObj) => (
                     <Badge
-                      key={tag}
+                      key={tagObj.tag}
                       variant="outline"
                       className="cursor-pointer text-xs hover:bg-primary hover:text-primary-foreground transition-colors"
-                      onClick={() => handleAddTag(tag)}
+                      onClick={() => handleAddTag(tagObj.tag)}
                     >
                       <Plus className="h-3 w-3 mr-1" />
-                      {tag}
+                      {tagObj.tag}
                     </Badge>
                   ))}
                 </div>
@@ -420,7 +420,7 @@ export function EditResourceDialog({
                 onChange={handleThumbnailUpload}
                 className="hidden"
               />
-              {url && type !== 'video' && !url.startsWith('blob:') && (
+              {url && type !== 'video' && !url.startsWith('blob:') && !url.startsWith('data:') && (
                 <Button
                   type="button"
                   variant="outline"

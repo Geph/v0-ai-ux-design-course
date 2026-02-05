@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Settings, Download, Upload, Check, Sun, Moon, X } from "lucide-react"
+import { Settings, Download, Upload, Check, Sun, Moon, X, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { exportXmlFile, xmlToResources } from "@/lib/xml-utils"
 import { colorPalettes, applyPalette, PALETTE_STORAGE_KEY, THEME_STORAGE_KEY, type ColorPalette } from "@/lib/color-palettes"
@@ -15,28 +15,25 @@ import { Badge } from "@/components/ui/badge"
 const POPULAR_TAGS_STORAGE_KEY = "ux-ai-popular-tags"
 const APP_NAME_STORAGE_KEY = "ux-ai-app-name"
 const APP_DESCRIPTION_STORAGE_KEY = "ux-ai-app-description"
-const APP_FOOTER_STORAGE_KEY = "ux-ai-app-footer"
 
 interface SettingsDialogProps {
   resources: Resource[]
   onImport: (resources: Resource[]) => void
+  onDeleteAllResources?: () => void
   onAppNameChange?: (name: string) => void
   onAppDescriptionChange?: (description: string) => void
-  onFooterTextChange?: (text: string) => void
   currentAppName?: string
   currentAppDescription?: string
-  currentFooterText?: string
 }
 
 export function SettingsDialog({ 
   resources, 
   onImport,
+  onDeleteAllResources,
   onAppNameChange,
   onAppDescriptionChange,
-  onFooterTextChange,
   currentAppName = "User Experience Design with AI",
-  currentAppDescription = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence.",
-  currentFooterText = "a course at the University of Illinois at Urbana-Champaign"
+  currentAppDescription = "Explore a curated and reviewed collection of learning resources related to the intersection of UX design and artificial intelligence."
 }: SettingsDialogProps) {
   const [open, setOpen] = useState(false)
   const [selectedPalette, setSelectedPalette] = useState<string>("vibrant-blue")
@@ -45,7 +42,6 @@ export function SettingsDialog({
   const [newTag, setNewTag] = useState("")
   const [appName, setAppName] = useState(currentAppName)
   const [appDescription, setAppDescription] = useState(currentAppDescription)
-  const [footerText, setFooterText] = useState(currentFooterText)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load saved preferences on mount
@@ -69,10 +65,11 @@ export function SettingsDialog({
     if (savedName) setAppName(savedName)
     
     const savedDescription = localStorage.getItem(APP_DESCRIPTION_STORAGE_KEY)
-    if (savedDescription) setAppDescription(savedDescription)
-    
-    const savedFooter = localStorage.getItem(APP_FOOTER_STORAGE_KEY)
-    if (savedFooter) setFooterText(savedFooter)
+    if (savedDescription) {
+      // Strip HTML tags to get clean text
+      const cleanDescription = savedDescription.replace(/<[^>]*>/g, '')
+      setAppDescription(cleanDescription)
+    }
     
     // Apply saved palette
     const palette = colorPalettes.find(p => p.id === (savedPalette || "vibrant-blue"))
@@ -212,21 +209,6 @@ export function SettingsDialog({
             />
           </div>
 
-          {/* Footer Text */}
-          <div className="space-y-3">
-            <Label htmlFor="footer-text" className="text-sm font-medium">Footer Text</Label>
-            <Input
-              id="footer-text"
-              value={footerText}
-              onChange={(e) => {
-                setFooterText(e.target.value)
-                onFooterTextChange?.(e.target.value)
-                localStorage.setItem(APP_FOOTER_STORAGE_KEY, e.target.value)
-              }}
-              placeholder="Enter footer text"
-            />
-          </div>
-
           {/* Color Palette Selection */}
           <div className="space-y-3 border-t pt-4">
             <Label className="text-sm font-medium">Color Palette</Label>
@@ -284,6 +266,28 @@ export function SettingsDialog({
             </Button>
             <p className="text-xs text-muted-foreground">
               Import or export your resource library. Save as default to use these resources when deployed.
+            </p>
+          </div>
+
+          {/* Delete All Resources */}
+          <div className="space-y-3 border-t pt-4">
+            <Label className="text-sm font-medium">Danger Zone</Label>
+            <Button 
+              variant="destructive" 
+              size="sm" 
+              onClick={() => {
+                if (window.confirm("Are you sure you want to delete all resources? This action cannot be undone.")) {
+                  onDeleteAllResources?.()
+                  setOpen(false)
+                }
+              }}
+              className="w-full gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete All Resources
+            </Button>
+            <p className="text-xs text-muted-foreground">
+              Permanently delete all resources in the library.
             </p>
           </div>
         </div>
