@@ -54,10 +54,36 @@ export function RichTextEditor({
   }
 
   const insertLink = () => {
-    if (linkUrl) {
-      restoreSelection()
-      document.execCommand('createLink', false, linkUrl)
-      handleInput()
+    if (linkUrl && savedSelection) {
+      const selection = window.getSelection()
+      if (selection) {
+        selection.removeAllRanges()
+        selection.addRange(savedSelection)
+        
+        // Create anchor element
+        const anchor = document.createElement('a')
+        anchor.href = linkUrl
+        anchor.target = '_blank'
+        anchor.rel = 'noopener noreferrer'
+        
+        // Wrap selection in anchor
+        try {
+          const range = selection.getRangeAt(0)
+          const selectedText = range.extractContents()
+          anchor.appendChild(selectedText)
+          range.insertNode(anchor)
+          
+          // Move cursor after link
+          range.setStartAfter(anchor)
+          range.collapse(true)
+          selection.removeAllRanges()
+          selection.addRange(range)
+          
+          handleInput()
+        } catch (error) {
+          console.error('[v0] Error inserting link:', error)
+        }
+      }
     }
     setShowLinkDialog(false)
     setLinkUrl('')

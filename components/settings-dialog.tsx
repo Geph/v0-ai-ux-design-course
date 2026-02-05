@@ -200,8 +200,7 @@ export function SettingsDialog({
 
           {/* App Description */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Library Description (with formatting)</Label>
-            <p className="text-xs text-muted-foreground">Use Ctrl+K to add links. Bold and italic are also supported.</p>
+            <Label className="text-sm font-medium">Library Description</Label>
             <RichTextEditor
               value={appDescription}
               onChange={(value) => {
@@ -216,8 +215,7 @@ export function SettingsDialog({
 
           {/* Footer Text */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Footer Text (with formatting)</Label>
-            <p className="text-xs text-muted-foreground">Use Ctrl+K to add links. Bold and italic are also supported.</p>
+            <Label className="text-sm font-medium">Footer Text</Label>
             <RichTextEditor
               value={footerText}
               onChange={(value) => {
