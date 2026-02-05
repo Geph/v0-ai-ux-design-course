@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Bold, Italic, Link2 } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Bold, Italic, Link2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface RichTextEditorProps {
@@ -18,20 +18,50 @@ export function RichTextEditor({
   rows = 3
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null)
-  const [isEditingLink, setIsEditingLink] = useState(false)
+  const linkInputRef = useRef<HTMLInputElement>(null)
+  const [showLinkDialog, setShowLinkDialog] = useState(false)
   const [linkUrl, setLinkUrl] = useState('')
+  const [savedSelection, setSavedSelection] = useState<Range | null>(null)
+
+  const saveSelection = () => {
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      setSavedSelection(selection.getRangeAt(0).cloneRange())
+    }
+  }
+
+  const restoreSelection = () => {
+    if (savedSelection) {
+      const selection = window.getSelection()
+      if (selection) {
+        selection.removeAllRanges()
+        selection.addRange(savedSelection)
+      }
+    }
+  }
 
   const applyFormat = (command: string, value?: string) => {
     document.execCommand(command, false, value)
     editorRef.current?.focus()
+    handleInput()
+  }
+
+  const openLinkDialog = () => {
+    saveSelection()
+    setLinkUrl('')
+    setShowLinkDialog(true)
+    setTimeout(() => linkInputRef.current?.focus(), 50)
   }
 
   const insertLink = () => {
     if (linkUrl) {
-      applyFormat('createLink', linkUrl)
-      setLinkUrl('')
-      setIsEditingLink(false)
+      restoreSelection()
+      document.execCommand('createLink', false, linkUrl)
+      handleInput()
     }
+    setShowLinkDialog(false)
+    setLinkUrl('')
+    editorRef.current?.focus()
   }
 
   const handleInput = () => {
@@ -41,14 +71,26 @@ export function RichTextEditor({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && isEditingLink) {
+    // Ctrl+K or Cmd+K to open link dialog
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault()
+      openLinkDialog()
+    }
+  }
+
+  const handleLinkKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
       e.preventDefault()
       insertLink()
+    } else if (e.key === 'Escape') {
+      setShowLinkDialog(false)
+      setLinkUrl('')
+      editorRef.current?.focus()
     }
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 relative">
       <div className="flex gap-1 flex-wrap">
         <Button
           type="button"
@@ -76,44 +118,64 @@ export function RichTextEditor({
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => setIsEditingLink(!isEditingLink)}
-          title="Add Link"
+          onClick={openLinkDialog}
+          title="Add Link (Ctrl+K)"
           className="h-8 w-8 p-0"
         >
           <Link2 className="h-4 w-4" />
         </Button>
       </div>
 
-      {isEditingLink && (
-        <div className="flex gap-2">
+      {/* Link Dialog Popup */}
+      {showLinkDialog && (
+        <div className="absolute z-50 top-10 left-0 bg-popover border border-border rounded-lg shadow-lg p-3 w-72">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium">Insert Link</span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setShowLinkDialog(false)
+                setLinkUrl('')
+                editorRef.current?.focus()
+              }}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
           <input
+            ref={linkInputRef}
             type="url"
-            placeholder="Enter URL..."
+            placeholder="https://example.com"
             value={linkUrl}
             onChange={(e) => setLinkUrl(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="flex-1 px-3 py-1 border border-input rounded-md text-sm bg-background"
+            onKeyDown={handleLinkKeyDown}
+            className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background mb-2"
           />
-          <Button
-            type="button"
-            size="sm"
-            onClick={insertLink}
-            className="h-8"
-          >
-            Add
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setIsEditingLink(false)
-              setLinkUrl('')
-            }}
-            className="h-8"
-          >
-            Cancel
-          </Button>
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowLinkDialog(false)
+                setLinkUrl('')
+                editorRef.current?.focus()
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={insertLink}
+              disabled={!linkUrl}
+            >
+              Insert
+            </Button>
+          </div>
         </div>
       )}
 
@@ -121,10 +183,12 @@ export function RichTextEditor({
         ref={editorRef}
         contentEditable
         onInput={handleInput}
+        onKeyDown={handleKeyDown}
         suppressContentEditableWarning
         dangerouslySetInnerHTML={{ __html: value }}
-        className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background min-h-24 focus:outline-none focus:ring-2 focus:ring-ring overflow-y-auto"
-        style={{ maxHeight: `${rows * 1.5}em` }}
+        data-placeholder={placeholder}
+        className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring overflow-y-auto [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-muted-foreground"
+        style={{ minHeight: `${rows * 1.5}em` }}
       />
     </div>
   )

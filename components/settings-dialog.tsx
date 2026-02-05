@@ -16,8 +16,7 @@ import { Badge } from "@/components/ui/badge"
 const POPULAR_TAGS_STORAGE_KEY = "ux-ai-popular-tags"
 const APP_NAME_STORAGE_KEY = "ux-ai-app-name"
 const APP_DESCRIPTION_STORAGE_KEY = "ux-ai-app-description"
-const APP_FOOTER_LINE1_STORAGE_KEY = "ux-ai-app-footer-line1"
-const APP_FOOTER_LINE2_STORAGE_KEY = "ux-ai-app-footer-line2"
+const APP_FOOTER_STORAGE_KEY = "ux-ai-app-footer"
 
 interface SettingsDialogProps {
   resources: Resource[]
@@ -25,12 +24,10 @@ interface SettingsDialogProps {
   onDeleteAllResources?: () => void
   onAppNameChange?: (name: string) => void
   onAppDescriptionChange?: (description: string) => void
-  onFooterLine1Change?: (text: string) => void
-  onFooterLine2Change?: (text: string) => void
+  onFooterTextChange?: (text: string) => void
   currentAppName?: string
   currentAppDescription?: string
-  currentFooterLine1?: string
-  currentFooterLine2?: string
+  currentFooterText?: string
 }
 
 export function SettingsDialog({ 
@@ -39,12 +36,10 @@ export function SettingsDialog({
   onDeleteAllResources,
   onAppNameChange,
   onAppDescriptionChange,
-  onFooterLine1Change,
-  onFooterLine2Change,
+  onFooterTextChange,
   currentAppName = "User Experience Design with AI",
   currentAppDescription = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence.",
-  currentFooterLine1 = "A resource library created for Informatics 490: User Experience Design with AI",
-  currentFooterLine2 = "a course at the University of Illinois at Urbana-Champaign"
+  currentFooterText = 'A resource library created for <a href="https://courses.illinois.edu/schedule/terms/INFO/490" target="_blank" rel="noopener noreferrer">Informatics 490: User Experience Design with AI</a>, a course at the University of Illinois at Urbana-Champaign'
 }: SettingsDialogProps) {
   const [open, setOpen] = useState(false)
   const [selectedPalette, setSelectedPalette] = useState<string>("vibrant-blue")
@@ -53,8 +48,7 @@ export function SettingsDialog({
   const [newTag, setNewTag] = useState("")
   const [appName, setAppName] = useState(currentAppName)
   const [appDescription, setAppDescription] = useState(currentAppDescription)
-  const [footerLine1, setFooterLine1] = useState(currentFooterLine1)
-  const [footerLine2, setFooterLine2] = useState(currentFooterLine2)
+  const [footerText, setFooterText] = useState(currentFooterText)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load saved preferences on mount
@@ -80,11 +74,8 @@ export function SettingsDialog({
     const savedDescription = localStorage.getItem(APP_DESCRIPTION_STORAGE_KEY)
     if (savedDescription) setAppDescription(savedDescription)
     
-    const savedFooterLine1 = localStorage.getItem(APP_FOOTER_LINE1_STORAGE_KEY)
-    if (savedFooterLine1) setFooterLine1(savedFooterLine1)
-    
-    const savedFooterLine2 = localStorage.getItem(APP_FOOTER_LINE2_STORAGE_KEY)
-    if (savedFooterLine2) setFooterLine2(savedFooterLine2)
+    const savedFooter = localStorage.getItem(APP_FOOTER_STORAGE_KEY)
+    if (savedFooter) setFooterText(savedFooter)
     
     // Apply saved palette
     const palette = colorPalettes.find(p => p.id === (savedPalette || "vibrant-blue"))
@@ -224,33 +215,19 @@ export function SettingsDialog({
             />
           </div>
 
-          {/* Footer Line 1 */}
+          {/* Footer Text */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Footer Line 1 (with formatting)</Label>
+            <Label className="text-sm font-medium">Footer Text (with formatting)</Label>
+            <p className="text-xs text-muted-foreground">Use Ctrl+K to add links. Bold and italic are also supported.</p>
             <RichTextEditor
-              value={footerLine1}
+              value={footerText}
               onChange={(value) => {
-                setFooterLine1(value)
-                onFooterLine1Change?.(value)
-                localStorage.setItem(APP_FOOTER_LINE1_STORAGE_KEY, value)
+                setFooterText(value)
+                onFooterTextChange?.(value)
+                localStorage.setItem(APP_FOOTER_STORAGE_KEY, value)
               }}
-              placeholder="Enter first line of footer text"
-              rows={2}
-            />
-          </div>
-
-          {/* Footer Line 2 */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Footer Line 2 (with formatting)</Label>
-            <RichTextEditor
-              value={footerLine2}
-              onChange={(value) => {
-                setFooterLine2(value)
-                onFooterLine2Change?.(value)
-                localStorage.setItem(APP_FOOTER_LINE2_STORAGE_KEY, value)
-              }}
-              placeholder="Enter second line of footer text"
-              rows={2}
+              placeholder="Enter footer text"
+              rows={3}
             />
           </div>
 

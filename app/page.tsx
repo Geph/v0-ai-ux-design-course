@@ -16,13 +16,13 @@ import { Button } from "@/components/ui/button"
 const STORAGE_KEY = "ux-ai-resources"
 const APP_NAME_STORAGE_KEY = "ux-ai-app-name"
 const APP_DESCRIPTION_STORAGE_KEY = "ux-ai-app-description"
-const APP_FOOTER_LINE1_STORAGE_KEY = "ux-ai-app-footer-line1"
-const APP_FOOTER_LINE2_STORAGE_KEY = "ux-ai-app-footer-line2"
+const APP_FOOTER_STORAGE_KEY = "ux-ai-app-footer"
 
 const DEFAULT_APP_NAME = "User Experience Design with AI"
 const DEFAULT_APP_DESCRIPTION = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence."
-const DEFAULT_FOOTER_LINE1 = "A resource library created for Informatics 490: User Experience Design with AI"
-const DEFAULT_FOOTER_LINE2 = "a course at the University of Illinois at Urbana-Champaign"
+const DEFAULT_FOOTER_TEXT = 'A resource library created for <a href="https://courses.illinois.edu/schedule/terms/INFO/490" target="_blank" rel="noopener noreferrer">Informatics 490: User Experience Design with AI</a>, a course at the University of Illinois at Urbana-Champaign'
+
+const APP_VERSION = "v0.3.0"
 
 export default function ResourceLibrary() {
   const [resources, setResources] = useState<Resource[]>(initialResources)
@@ -34,8 +34,7 @@ export default function ResourceLibrary() {
   const [showPopularTags, setShowPopularTags] = useState(true)
   const [appName, setAppName] = useState(DEFAULT_APP_NAME)
   const [appDescription, setAppDescription] = useState(DEFAULT_APP_DESCRIPTION)
-  const [footerLine1, setFooterLine1] = useState(DEFAULT_FOOTER_LINE1)
-  const [footerLine2, setFooterLine2] = useState(DEFAULT_FOOTER_LINE2)
+  const [footerText, setFooterText] = useState(DEFAULT_FOOTER_TEXT)
 
   // Load resources from localStorage on mount
   useEffect(() => {
@@ -49,11 +48,8 @@ export default function ResourceLibrary() {
       const savedDescription = localStorage.getItem(APP_DESCRIPTION_STORAGE_KEY)
       if (savedDescription) setAppDescription(savedDescription)
       
-      const savedFooterLine1 = localStorage.getItem(APP_FOOTER_LINE1_STORAGE_KEY)
-      if (savedFooterLine1) setFooterLine1(savedFooterLine1)
-      
-      const savedFooterLine2 = localStorage.getItem(APP_FOOTER_LINE2_STORAGE_KEY)
-      if (savedFooterLine2) setFooterLine2(savedFooterLine2)
+      const savedFooter = localStorage.getItem(APP_FOOTER_STORAGE_KEY)
+      if (savedFooter) setFooterText(savedFooter)
       
       // Try to load from stored localStorage first
       const stored = localStorage.getItem(STORAGE_KEY)
@@ -198,6 +194,7 @@ export default function ResourceLibrary() {
         popularTags={popularTags}
         appName={appName}
         appDescription={appDescription}
+        appVersion={APP_VERSION}
       />
 
       {/* Search and Filters Section */}
@@ -214,12 +211,10 @@ export default function ResourceLibrary() {
         onDeleteAllResources={handleDeleteAllResources}
         onAppNameChange={setAppName}
         onAppDescriptionChange={setAppDescription}
-        onFooterLine1Change={setFooterLine1}
-        onFooterLine2Change={setFooterLine2}
+        onFooterTextChange={setFooterText}
         currentAppName={appName}
         currentAppDescription={appDescription}
-        currentFooterLine1={footerLine1}
-        currentFooterLine2={footerLine2}
+        currentFooterText={footerText}
       />
           </div>
 
@@ -327,23 +322,8 @@ export default function ResourceLibrary() {
               </a>
             </div>
           </div>
-          <div className="border-t border-border mt-6 pt-4 text-center text-xs text-muted-foreground">
-            <p>
-              A resource library created for{" "}
-              <a 
-                href="https://courses.illinois.edu/schedule/terms/INFO/490"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Informatics 490: User Experience Design with AI
-              </a>
-            </p>
-            <p dangerouslySetInnerHTML={{ __html: footerLine1 }} />
-            <p dangerouslySetInnerHTML={{ __html: footerLine2 }} />
-            <p className="mt-2 text-[10px] opacity-60">
-              v0.2.0
-            </p>
+          <div className="border-t border-border mt-6 pt-4 text-center text-xs text-muted-foreground [&_a]:text-primary [&_a]:hover:underline">
+            <div dangerouslySetInnerHTML={{ __html: footerText }} />
           </div>
         </div>
       </footer>
