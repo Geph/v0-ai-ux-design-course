@@ -44,7 +44,11 @@ export default function ResourceLibrary() {
       if (savedName) setAppName(savedName)
       
       const savedDescription = localStorage.getItem(APP_DESCRIPTION_STORAGE_KEY)
-      if (savedDescription) setAppDescription(savedDescription)
+      if (savedDescription) {
+        // Strip HTML tags to get clean text
+        const cleanDescription = savedDescription.replace(/<[^>]*>/g, '')
+        setAppDescription(cleanDescription)
+      }
       
       // Try to load from stored localStorage first
       const stored = localStorage.getItem(STORAGE_KEY)
