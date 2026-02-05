@@ -143,14 +143,6 @@ export function resourcesToXml(resources: Resource[]): string {
       xml += `    <localPath>${escapeXml(resource.localPath)}</localPath>\n`
     }
     
-    if (resource.fileData) {
-      xml += `    <fileData>${escapeXml(resource.fileData)}</fileData>\n`
-    }
-    
-    if (resource.fileMimeType) {
-      xml += `    <fileMimeType>${escapeXml(resource.fileMimeType)}</fileMimeType>\n`
-    }
-    
     if (resource.ratingSum !== undefined) {
       xml += `    <ratingSum>${resource.ratingSum}</ratingSum>\n`
     }
@@ -211,20 +203,11 @@ export function xmlToResources(xmlString: string): Resource[] {
       if (tagText) tags.push(tagText)
     })
     
-    const fileData = getTextContent("fileData") || undefined
-    const fileMimeType = getTextContent("fileMimeType") || undefined
-    
-    // If we have fileData, construct a data URL for the resource URL
-    let finalUrl = getTextContent("url")
-    if (fileData && fileMimeType && (!finalUrl || finalUrl === "#" || finalUrl.startsWith("blob:"))) {
-      finalUrl = `data:${fileMimeType};base64,${fileData}`
-    }
-    
     const resource: Resource = {
       id: getTextContent("id"),
       title: getTextContent("title"),
       type: getTextContent("type") as Resource["type"],
-      url: finalUrl,
+      url: getTextContent("url"),
       thumbnail: getTextContent("thumbnail"),
       summary: getTextContent("summary"),
       tags,
@@ -232,8 +215,6 @@ export function xmlToResources(xmlString: string): Resource[] {
       author: getTextContent("author") || undefined,
       year: getNumberContent("year"),
       localPath: getTextContent("localPath") || undefined,
-      fileData,
-      fileMimeType,
       ratingSum: getNumberContent("ratingSum"),
       ratingCount: getNumberContent("ratingCount"),
       userRating: getNumberContent("userRating"),

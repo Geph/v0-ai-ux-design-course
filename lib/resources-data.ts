@@ -11,9 +11,7 @@ export interface Resource {
   dateAdded: string
   author?: string
   year?: number // Publication year
-  localPath?: string // For locally uploaded PDFs (deprecated, use fileData)
-  fileData?: string // Base64-encoded file content for uploaded PDFs/images
-  fileMimeType?: string // MIME type of the uploaded file (e.g., "application/pdf")
+  localPath?: string // For locally uploaded PDFs (temporary, local only)
   ratingSum?: number // Sum of all user ratings
   ratingCount?: number // Number of ratings
   userRating?: number // Current user's rating (1-4)

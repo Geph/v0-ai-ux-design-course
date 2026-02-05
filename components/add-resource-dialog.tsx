@@ -18,36 +18,6 @@ import type { Resource, ResourceType } from "@/lib/resources-data"
 
 const MAX_FILE_SIZE = 30 * 1024 * 1024 // 30MB in bytes
 
-/**
- * Converts a File to base64 string
- */
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      try {
-        const result = reader.result as string
-        // Remove the data URL prefix to get just the base64 string
-        const base64Parts = result.split(",")
-        if (base64Parts.length < 2) {
-          reject(new Error("Invalid file read result"))
-          return
-        }
-        const base64 = base64Parts[1]
-        if (!base64 || typeof base64 !== 'string') {
-          reject(new Error("Failed to extract base64 data"))
-          return
-        }
-        resolve(base64)
-      } catch (error) {
-        reject(error)
-      }
-    }
-    reader.onerror = () => reject(new Error("File read failed"))
-    reader.readAsDataURL(file)
-  })
-}
-
 interface AddResourceDialogProps {
   onAddResource: (resource: Resource) => void
   popularTags: string[]
@@ -345,13 +315,22 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
 
     const imageTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp", "image/svg+xml"]
 
-    if (file.type === "application/pdf") {
-      setUploadedFile(file)
-      setDetectedType("pdf")
-      setTitle(file.name.replace(".pdf", ""))
-      setUrl("") // Clear URL since we're using a file
-      setShowForm(true)
-    } else if (imageTypes.includes(file.type)) {
+  if (file.type === "application/pdf") {
+    // Show warning about temporary storage
+    const proceed = window.confirm(
+      "⚠️ Uploaded PDFs are temporary and local only.\n\n" +
+      "They will not be saved when you refresh the page or export your library.\n\n" +
+      "For permanent storage, we recommend hosting PDFs elsewhere (Google Drive, Dropbox, etc.) and using a link instead.\n\n" +
+      "Continue with temporary upload?"
+    )
+    if (!proceed) return
+    
+    setUploadedFile(file)
+    setDetectedType("pdf")
+    setTitle(file.name.replace(".pdf", ""))
+    setUrl("") // Clear URL since we're using a file
+    setShowForm(true)
+  } else if (imageTypes.includes(file.type)) {
       setUploadedFile(file)
       setDetectedType("graphic")
       // Remove file extension from title
@@ -420,42 +399,27 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
       return
     }
 
+  let localPath: string | undefined
   let finalResourceUrl = resourceUrl
-  let fileData: string | undefined
-  let fileMimeType: string | undefined
   
-  // If a file was uploaded, convert to base64 for persistent storage
+  // If a file was uploaded, create a blob URL (temporary, local only)
   if (uploadedFile) {
-    try {
-      fileData = await fileToBase64(uploadedFile)
-      if (!fileData || typeof fileData !== 'string') {
-        console.error("[v0] Failed to convert file to base64: invalid result")
-        alert("Failed to process uploaded file")
-        return
-      }
-      fileMimeType = uploadedFile.type
-      // Create a data URL for the resource
-      finalResourceUrl = `data:${fileMimeType};base64,${fileData}`
-    } catch (error) {
-      console.error("[v0] Failed to convert file to base64:", error)
-      alert("Failed to process uploaded file")
-      return
-    }
+    localPath = URL.createObjectURL(uploadedFile)
+    finalResourceUrl = localPath
   }
   
   const resource: Resource = {
-  id: generateId(),
-  title: title || "Untitled Resource",
-  type: detectedType,
-  url: finalResourceUrl,
-  thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
-  summary: summary || "No description provided.",
-  tags: tags,
-  dateAdded: new Date().toISOString().split("T")[0],
-  author: author ? author.slice(0, 160) : undefined,
-  year: year ? parseInt(year, 10) : undefined,
-  fileData,
-  fileMimeType,
+    id: generateId(),
+    title: title || "Untitled Resource",
+    type: detectedType,
+    url: finalResourceUrl,
+    thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
+    summary: summary || "No description provided.",
+    tags: tags,
+    dateAdded: new Date().toISOString().split("T")[0],
+    author: author ? author.slice(0, 160) : undefined,
+    year: year ? parseInt(year, 10) : undefined,
+    localPath: localPath,
   }
 
     onAddResource(resource)
@@ -463,43 +427,29 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
     setOpen(false)
   }
 
-  const handleProceedWithDuplicate = async () => {
-  let finalResourceUrl = url || "#"
-  let fileData: string | undefined
-  let fileMimeType: string | undefined
-  
-  // If a file was uploaded, convert to base64
-  if (uploadedFile) {
-    try {
-      fileData = await fileToBase64(uploadedFile)
-      if (!fileData || typeof fileData !== 'string') {
-        console.error("[v0] Failed to convert file to base64: invalid result")
-        alert("Failed to process uploaded file")
-        return
-      }
-      fileMimeType = uploadedFile.type
-      finalResourceUrl = `data:${fileMimeType};base64,${fileData}`
-    } catch (error) {
-      console.error("[v0] Failed to convert file to base64:", error)
-      alert("Failed to process uploaded file")
-      return
+  const handleProceedWithDuplicate = () => {
+    let localPath: string | undefined
+    let finalResourceUrl = url || "#"
+    
+    // If a file was uploaded, create a blob URL
+    if (uploadedFile) {
+      localPath = URL.createObjectURL(uploadedFile)
+      finalResourceUrl = localPath
     }
-  }
-  
-  const resource: Resource = {
-  id: generateId(),
-  title: title || "Untitled Resource",
-  type: detectedType,
-  url: finalResourceUrl,
-  thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
-  summary: summary || "No description provided.",
-  tags: tags,
-  dateAdded: new Date().toISOString().split("T")[0],
-  author: author ? author.slice(0, 160) : undefined,
-  year: year ? parseInt(year, 10) : undefined,
-  fileData,
-  fileMimeType,
-  }
+    
+    const resource: Resource = {
+      id: generateId(),
+      title: title || "Untitled Resource",
+      type: detectedType,
+      url: finalResourceUrl,
+      thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
+      summary: summary || "No description provided.",
+      tags: tags,
+      dateAdded: new Date().toISOString().split("T")[0],
+      author: author ? author.slice(0, 160) : undefined,
+      year: year ? parseInt(year, 10) : undefined,
+      localPath: localPath,
+    }
   
   setDuplicateWarning(null)
   onAddResource(resource)
