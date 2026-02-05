@@ -200,17 +200,16 @@ export function SettingsDialog({
 
           {/* App Description */}
           <div className="space-y-3">
-            <Label htmlFor="app-description" className="text-sm font-medium">Library Description</Label>
-            <textarea
-              id="app-description"
+            <Label className="text-sm font-medium">Library Description (with formatting)</Label>
+            <p className="text-xs text-muted-foreground">Use Ctrl+K to add links. Bold and italic are also supported.</p>
+            <RichTextEditor
               value={appDescription}
-              onChange={(e) => {
-                setAppDescription(e.target.value)
-                onAppDescriptionChange?.(e.target.value)
-                localStorage.setItem(APP_DESCRIPTION_STORAGE_KEY, e.target.value)
+              onChange={(value) => {
+                setAppDescription(value)
+                onAppDescriptionChange?.(value)
+                localStorage.setItem(APP_DESCRIPTION_STORAGE_KEY, value)
               }}
               placeholder="Enter library description"
-              className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background resize-none"
               rows={3}
             />
           </div>

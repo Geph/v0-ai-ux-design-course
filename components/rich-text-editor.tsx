@@ -187,7 +187,7 @@ export function RichTextEditor({
         suppressContentEditableWarning
         dangerouslySetInnerHTML={{ __html: value }}
         data-placeholder={placeholder}
-        className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring overflow-y-auto [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-muted-foreground"
+        className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring overflow-y-auto [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-muted-foreground [&_a]:text-blue-600 [&_a]:underline [&_a]:cursor-pointer"
         style={{ minHeight: `${rows * 1.5}em` }}
       />
     </div>
