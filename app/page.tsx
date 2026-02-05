@@ -155,6 +155,8 @@ export default function ResourceLibrary() {
     setResources([])
     localStorage.removeItem(STORAGE_KEY)
   }
+
+  const handleImport = (importedResources: Resource[]) => {
     setResources(importedResources)
   }
 
