@@ -810,22 +810,22 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
                   </Button>
                 </div>
 
-                {/* Suggested Tags */}
-                {popularTags.filter(t => !tags.includes(t)).length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Popular tags:</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {popularTags.filter(t => !tags.includes(t)).slice(0, 6).map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="cursor-pointer text-xs hover:bg-primary hover:text-primary-foreground transition-colors"
-                          onClick={() => handleAddTag(tag)}
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          {tag}
-                        </Badge>
-                      ))}
+              {/* Suggested Tags */}
+              {popularTags.filter(t => !tags.includes(t.tag)).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">Popular tags:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {popularTags.filter(t => !tags.includes(t.tag)).slice(0, 6).map((tagObj) => (
+                      <Badge
+                        key={tagObj.tag}
+                        variant="outline"
+                        className="cursor-pointer text-xs hover:bg-primary hover:text-primary-foreground transition-colors"
+                        onClick={() => handleAddTag(tagObj.tag)}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        {tagObj.tag}
+                      </Badge>
+                    ))}
                     </div>
                   </div>
                 )}
