@@ -33,7 +33,7 @@ export function SettingsDialog({
   onAppNameChange,
   onAppDescriptionChange,
   currentAppName = "User Experience Design with AI",
-  currentAppDescription = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence."
+  currentAppDescription = "Explore a curated and reviewed collection of learning resources related to the intersection of UX design and artificial intelligence."
 }: SettingsDialogProps) {
   const [open, setOpen] = useState(false)
   const [selectedPalette, setSelectedPalette] = useState<string>("vibrant-blue")
