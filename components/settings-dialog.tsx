@@ -65,7 +65,11 @@ export function SettingsDialog({
     if (savedName) setAppName(savedName)
     
     const savedDescription = localStorage.getItem(APP_DESCRIPTION_STORAGE_KEY)
-    if (savedDescription) setAppDescription(savedDescription)
+    if (savedDescription) {
+      // Strip HTML tags to get clean text
+      const cleanDescription = savedDescription.replace(/<[^>]*>/g, '')
+      setAppDescription(cleanDescription)
+    }
     
     // Apply saved palette
     const palette = colorPalettes.find(p => p.id === (savedPalette || "vibrant-blue"))
