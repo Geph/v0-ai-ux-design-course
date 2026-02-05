@@ -18,6 +18,23 @@ import type { Resource, ResourceType } from "@/lib/resources-data"
 
 const MAX_FILE_SIZE = 30 * 1024 * 1024 // 30MB in bytes
 
+/**
+ * Converts a File to base64 string
+ */
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      // Remove the data URL prefix to get just the base64 string
+      const base64 = result.split(",")[1]
+      resolve(base64)
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
+}
+
 interface AddResourceDialogProps {
   onAddResource: (resource: Resource) => void
   popularTags: string[]
@@ -390,64 +407,81 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
       return
     }
 
-    let localPath: string | undefined
-    let finalResourceUrl = resourceUrl
-
-    // If a file was uploaded, create a blob URL (in a real app, this would upload to server)
-    if (uploadedFile) {
-      // Create a blob URL for the uploaded PDF
-      // In a production app, you would upload this to a server/storage
-      localPath = URL.createObjectURL(uploadedFile)
-      finalResourceUrl = localPath
+  let finalResourceUrl = resourceUrl
+  let fileData: string | undefined
+  let fileMimeType: string | undefined
+  
+  // If a file was uploaded, convert to base64 for persistent storage
+  if (uploadedFile) {
+    try {
+      fileData = await fileToBase64(uploadedFile)
+      fileMimeType = uploadedFile.type
+      // Create a data URL for the resource
+      finalResourceUrl = `data:${fileMimeType};base64,${fileData}`
+    } catch (error) {
+      console.error("Failed to convert file to base64:", error)
+      alert("Failed to process uploaded file")
+      return
     }
-
-    const resource: Resource = {
-      id: generateId(),
-      title: title || "Untitled Resource",
-      type: detectedType,
-      url: finalResourceUrl,
-      thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
-      summary: summary || "No description provided.",
-      tags: tags,
-      dateAdded: new Date().toISOString().split("T")[0],
-      author: author ? author.slice(0, 160) : undefined,
-      year: year ? parseInt(year, 10) : undefined,
-      localPath: localPath,
-    }
+  }
+  
+  const resource: Resource = {
+  id: generateId(),
+  title: title || "Untitled Resource",
+  type: detectedType,
+  url: finalResourceUrl,
+  thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
+  summary: summary || "No description provided.",
+  tags: tags,
+  dateAdded: new Date().toISOString().split("T")[0],
+  author: author ? author.slice(0, 160) : undefined,
+  year: year ? parseInt(year, 10) : undefined,
+  fileData,
+  fileMimeType,
+  }
 
     onAddResource(resource)
     resetForm()
     setOpen(false)
   }
 
-  const handleProceedWithDuplicate = () => {
-    let localPath: string | undefined
-    let finalResourceUrl = url || "#"
-
-    // If a file was uploaded, create a blob URL
-    if (uploadedFile) {
-      localPath = URL.createObjectURL(uploadedFile)
-      finalResourceUrl = localPath
+  const handleProceedWithDuplicate = async () => {
+  let finalResourceUrl = url || "#"
+  let fileData: string | undefined
+  let fileMimeType: string | undefined
+  
+  // If a file was uploaded, convert to base64
+  if (uploadedFile) {
+    try {
+      fileData = await fileToBase64(uploadedFile)
+      fileMimeType = uploadedFile.type
+      finalResourceUrl = `data:${fileMimeType};base64,${fileData}`
+    } catch (error) {
+      console.error("Failed to convert file to base64:", error)
+      alert("Failed to process uploaded file")
+      return
     }
-
-    const resource: Resource = {
-      id: generateId(),
-      title: title || "Untitled Resource",
-      type: detectedType,
-      url: finalResourceUrl,
-      thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
-      summary: summary || "No description provided.",
-      tags: tags,
-      dateAdded: new Date().toISOString().split("T")[0],
-      author: author ? author.slice(0, 160) : undefined,
-      year: year ? parseInt(year, 10) : undefined,
-      localPath: localPath,
-    }
-
-    setDuplicateWarning(null)
-    onAddResource(resource)
-    resetForm()
-    setOpen(false)
+  }
+  
+  const resource: Resource = {
+  id: generateId(),
+  title: title || "Untitled Resource",
+  type: detectedType,
+  url: finalResourceUrl,
+  thumbnail: thumbnail || `https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop`,
+  summary: summary || "No description provided.",
+  tags: tags,
+  dateAdded: new Date().toISOString().split("T")[0],
+  author: author ? author.slice(0, 160) : undefined,
+  year: year ? parseInt(year, 10) : undefined,
+  fileData,
+  fileMimeType,
+  }
+  
+  setDuplicateWarning(null)
+  onAddResource(resource)
+  resetForm()
+  setOpen(false)
   }
 
   const typeIcons: Record<ResourceType, typeof FileText> = {

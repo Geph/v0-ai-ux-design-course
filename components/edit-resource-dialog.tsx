@@ -420,7 +420,7 @@ export function EditResourceDialog({
                 onChange={handleThumbnailUpload}
                 className="hidden"
               />
-              {url && type !== 'video' && !url.startsWith('blob:') && (
+              {url && type !== 'video' && !url.startsWith('blob:') && !url.startsWith('data:') && (
                 <Button
                   type="button"
                   variant="outline"
