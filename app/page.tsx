@@ -96,8 +96,13 @@ export default function ResourceLibrary() {
   }, [])
 
   // Save resources to localStorage when they change
+  // Strip fileData to avoid quota exceeded errors (PDFs are too large for localStorage)
   useEffect(() => {
-    const xml = resourcesToXml(resources)
+    const resourcesWithoutFileData = resources.map(r => {
+      const { fileData, fileMimeType, ...rest } = r
+      return rest
+    })
+    const xml = resourcesToXml(resourcesWithoutFileData)
     localStorage.setItem(STORAGE_KEY, xml)
   }, [resources])
 
