@@ -48,10 +48,9 @@ export function Header({
         </h1>
 
         {/* Subtitle */}
-        <p 
-          className="text-base md:text-lg text-muted-foreground text-center max-w-2xl mx-auto mb-2 text-pretty [&_a]:text-primary [&_a]:hover:underline" 
-          dangerouslySetInnerHTML={{ __html: appDescription }}
-        />
+        <p className="text-base md:text-lg text-muted-foreground text-center max-w-2xl mx-auto mb-2 text-pretty">
+          {appDescription}
+        </p>
         <p className="text-xs text-muted-foreground/60 text-center mb-8">
           {appVersion}
         </p>

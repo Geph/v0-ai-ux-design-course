@@ -16,11 +16,10 @@ import { Button } from "@/components/ui/button"
 const STORAGE_KEY = "ux-ai-resources"
 const APP_NAME_STORAGE_KEY = "ux-ai-app-name"
 const APP_DESCRIPTION_STORAGE_KEY = "ux-ai-app-description"
-const APP_FOOTER_STORAGE_KEY = "ux-ai-app-footer"
 
 const DEFAULT_APP_NAME = "User Experience Design with AI"
 const DEFAULT_APP_DESCRIPTION = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence."
-const DEFAULT_FOOTER_TEXT = 'A resource library created for <a href="https://courses.illinois.edu/schedule/terms/INFO/490" target="_blank" rel="noopener noreferrer">Informatics 490: User Experience Design with AI</a>, a course at the University of Illinois at Urbana-Champaign'
+const FOOTER_TEXT = 'A resource library template created for <a href="https://courses.illinois.edu/schedule/terms/INFO/490" target="_blank" rel="noopener noreferrer">Informatics 490: User Experience Design with AI</a>, a course at the University of Illinois at Urbana-Champaign'
 
 const APP_VERSION = "v0.3.0"
 
@@ -34,7 +33,6 @@ export default function ResourceLibrary() {
   const [showPopularTags, setShowPopularTags] = useState(true)
   const [appName, setAppName] = useState(DEFAULT_APP_NAME)
   const [appDescription, setAppDescription] = useState(DEFAULT_APP_DESCRIPTION)
-  const [footerText, setFooterText] = useState(DEFAULT_FOOTER_TEXT)
 
   // Load resources from localStorage on mount
   useEffect(() => {
@@ -47,9 +45,6 @@ export default function ResourceLibrary() {
       
       const savedDescription = localStorage.getItem(APP_DESCRIPTION_STORAGE_KEY)
       if (savedDescription) setAppDescription(savedDescription)
-      
-      const savedFooter = localStorage.getItem(APP_FOOTER_STORAGE_KEY)
-      if (savedFooter) setFooterText(savedFooter)
       
       // Try to load from stored localStorage first
       const stored = localStorage.getItem(STORAGE_KEY)
@@ -211,10 +206,8 @@ export default function ResourceLibrary() {
         onDeleteAllResources={handleDeleteAllResources}
         onAppNameChange={setAppName}
         onAppDescriptionChange={setAppDescription}
-        onFooterTextChange={setFooterText}
         currentAppName={appName}
         currentAppDescription={appDescription}
-        currentFooterText={footerText}
       />
           </div>
 
@@ -323,7 +316,7 @@ export default function ResourceLibrary() {
             </div>
           </div>
           <div className="border-t border-border mt-6 pt-4 text-center text-xs text-muted-foreground [&_a]:text-primary [&_a]:hover:underline">
-            <div dangerouslySetInnerHTML={{ __html: footerText }} />
+            <div dangerouslySetInnerHTML={{ __html: FOOTER_TEXT }} />
           </div>
         </div>
       </footer>

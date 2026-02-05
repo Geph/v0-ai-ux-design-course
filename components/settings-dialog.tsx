@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { RichTextEditor } from "@/components/rich-text-editor"
 import { Settings, Download, Upload, Check, Sun, Moon, X, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { exportXmlFile, xmlToResources } from "@/lib/xml-utils"
@@ -16,7 +15,6 @@ import { Badge } from "@/components/ui/badge"
 const POPULAR_TAGS_STORAGE_KEY = "ux-ai-popular-tags"
 const APP_NAME_STORAGE_KEY = "ux-ai-app-name"
 const APP_DESCRIPTION_STORAGE_KEY = "ux-ai-app-description"
-const APP_FOOTER_STORAGE_KEY = "ux-ai-app-footer"
 
 interface SettingsDialogProps {
   resources: Resource[]
@@ -24,10 +22,8 @@ interface SettingsDialogProps {
   onDeleteAllResources?: () => void
   onAppNameChange?: (name: string) => void
   onAppDescriptionChange?: (description: string) => void
-  onFooterTextChange?: (text: string) => void
   currentAppName?: string
   currentAppDescription?: string
-  currentFooterText?: string
 }
 
 export function SettingsDialog({ 
@@ -36,10 +32,8 @@ export function SettingsDialog({
   onDeleteAllResources,
   onAppNameChange,
   onAppDescriptionChange,
-  onFooterTextChange,
   currentAppName = "User Experience Design with AI",
-  currentAppDescription = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence.",
-  currentFooterText = 'A resource library created for <a href="https://courses.illinois.edu/schedule/terms/INFO/490" target="_blank" rel="noopener noreferrer">Informatics 490: User Experience Design with AI</a>, a course at the University of Illinois at Urbana-Champaign'
+  currentAppDescription = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence."
 }: SettingsDialogProps) {
   const [open, setOpen] = useState(false)
   const [selectedPalette, setSelectedPalette] = useState<string>("vibrant-blue")
@@ -48,7 +42,6 @@ export function SettingsDialog({
   const [newTag, setNewTag] = useState("")
   const [appName, setAppName] = useState(currentAppName)
   const [appDescription, setAppDescription] = useState(currentAppDescription)
-  const [footerText, setFooterText] = useState(currentFooterText)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load saved preferences on mount
@@ -73,9 +66,6 @@ export function SettingsDialog({
     
     const savedDescription = localStorage.getItem(APP_DESCRIPTION_STORAGE_KEY)
     if (savedDescription) setAppDescription(savedDescription)
-    
-    const savedFooter = localStorage.getItem(APP_FOOTER_STORAGE_KEY)
-    if (savedFooter) setFooterText(savedFooter)
     
     // Apply saved palette
     const palette = colorPalettes.find(p => p.id === (savedPalette || "vibrant-blue"))
@@ -200,30 +190,17 @@ export function SettingsDialog({
 
           {/* App Description */}
           <div className="space-y-3">
-            <Label className="text-sm font-medium">Library Description</Label>
-            <RichTextEditor
+            <Label htmlFor="app-description" className="text-sm font-medium">Library Description</Label>
+            <textarea
+              id="app-description"
               value={appDescription}
-              onChange={(value) => {
-                setAppDescription(value)
-                onAppDescriptionChange?.(value)
-                localStorage.setItem(APP_DESCRIPTION_STORAGE_KEY, value)
+              onChange={(e) => {
+                setAppDescription(e.target.value)
+                onAppDescriptionChange?.(e.target.value)
+                localStorage.setItem(APP_DESCRIPTION_STORAGE_KEY, e.target.value)
               }}
               placeholder="Enter library description"
-              rows={3}
-            />
-          </div>
-
-          {/* Footer Text */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Footer Text</Label>
-            <RichTextEditor
-              value={footerText}
-              onChange={(value) => {
-                setFooterText(value)
-                onFooterTextChange?.(value)
-                localStorage.setItem(APP_FOOTER_STORAGE_KEY, value)
-              }}
-              placeholder="Enter footer text"
+              className="w-full px-3 py-2 border border-input rounded-md text-sm bg-background resize-none"
               rows={3}
             />
           </div>
