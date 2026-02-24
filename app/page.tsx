@@ -17,11 +17,11 @@ const STORAGE_KEY = "ux-ai-resources"
 const APP_NAME_STORAGE_KEY = "ux-ai-app-name"
 const APP_DESCRIPTION_STORAGE_KEY = "ux-ai-app-description"
 
-const DEFAULT_APP_NAME = "User Experience Design with AI"
-const DEFAULT_APP_DESCRIPTION = "Explore a curated and reviewed collection of learning resources related to the intersection of UX design and artificial intelligence."
+const DEFAULT_APP_NAME = "AI Tools for Education"
+const DEFAULT_APP_DESCRIPTION = "A curated and reviewed collection of AI tools relevant to teachers"
 const FOOTER_TEXT = 'A resource library template created for <a href="https://courses.illinois.edu/schedule/terms/INFO/490" target="_blank" rel="noopener noreferrer">Informatics 490: User Experience Design with AI</a>, a course at the University of Illinois at Urbana-Champaign'
 
-const APP_VERSION = "v0.3.0"
+const APP_VERSION = "v0.3.1"
 
 export default function ResourceLibrary() {
   const [resources, setResources] = useState<Resource[]>(initialResources)
@@ -82,11 +82,11 @@ export default function ResourceLibrary() {
 
     loadResources()
 
-    // Load saved theme/palette preferences, defaulting to midnight-gold
+    // Load saved theme/palette preferences, defaulting to ocean-teal
     const savedPalette = localStorage.getItem(PALETTE_STORAGE_KEY)
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY)
     
-    const palette = colorPalettes.find(p => p.id === (savedPalette || "midnight-gold"))
+    const palette = colorPalettes.find(p => p.id === (savedPalette || "ocean-teal"))
     if (palette) {
       applyPalette(palette, savedTheme === "dark")
       if (savedTheme === "dark") {
