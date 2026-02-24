@@ -17,7 +17,7 @@ const STORAGE_KEY = "ux-ai-resources"
 const APP_NAME_STORAGE_KEY = "ux-ai-app-name"
 const APP_DESCRIPTION_STORAGE_KEY = "ux-ai-app-description"
 
-const DEFAULT_APP_NAME = "AI Tools for Education"
+const DEFAULT_APP_NAME = "AI Teaching Tools"
 const DEFAULT_APP_DESCRIPTION = "A curated and reviewed collection of AI tools relevant to teachers"
 const FOOTER_TEXT = 'A resource library template created for <a href="https://courses.illinois.edu/schedule/terms/INFO/490" target="_blank" rel="noopener noreferrer">Informatics 490: User Experience Design with AI</a>, a course at the University of Illinois at Urbana-Champaign'
 
