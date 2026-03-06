@@ -1,28 +1,18 @@
-export type ResourceType = "pdf" | "video" | "link" | "graphic"
-
-export interface Resource {
-  id: string
-  title: string
-  type: ResourceType
-  url: string
-  thumbnail: string
-  summary: string
-  tags: string[]
-  dateAdded: string
-  author?: string
-  year?: number // Publication year
-  localPath?: string // For locally uploaded PDFs (temporary, local only)
-  ratingSum?: number // Sum of all user ratings
-  ratingCount?: number // Number of ratings
-  userRating?: number // Current user's rating (1-4)
-}
-
-export interface TagWithCount {
-  tag: string
-  count: number
-}
+import { type Resource, type TagWithCount } from "./types"
 
 export const resources: Resource[] = [
+  {
+    id: "1772828818659-t2q4u6o1y",
+    title: "You're Not Behind (Yet): How to Build AI Agents in 2026 (no coding)",
+    type: "video",
+    url: "https://www.youtube.com/watch?v=ibFJ--CH3cQ",
+    thumbnail: "https://img.youtube.com/vi/ibFJ--CH3cQ/maxresdefault.jpg",
+    summary: "AI Agents seem overwhelming, but in 2026, we've gotten to the point that any non-technical person can create and manage their own AI agents to accomplish tasks. I cover everything simply: what an agent actually is, what to automate, how to start, and build two agents step by step using two of the leading platforms. Then dive into common pitfalls and how to avoid them. This is everything you need to get started with building AI agents in 2026, no coding required.",
+    tags: ["Ai Literacy", "Agents"],
+    dateAdded: "2026-03-06",
+    author: "Futurepedia",
+    year: 2026,
+  },
   {
     id: "1772736583998-oqtdbd81r",
     title: "Vibe Coding: Best Practices for Prompting",
