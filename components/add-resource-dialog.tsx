@@ -21,12 +21,14 @@ const MAX_FILE_SIZE = 30 * 1024 * 1024 // 30MB in bytes
 interface AddResourceDialogProps {
   onAddResource: (resource: Resource) => void
   popularTags: string[]
+  allTags: string[]
   existingResources?: Resource[]
 }
 
-export function AddResourceDialog({ onAddResource, popularTags, existingResources = [] }: AddResourceDialogProps) {
+export function AddResourceDialog({ onAddResource, popularTags, allTags, existingResources = [] }: AddResourceDialogProps) {
   const [open, setOpen] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
+  const [showAllTags, setShowAllTags] = useState(false)
   const [url, setUrl] = useState("")
   const [detectedType, setDetectedType] = useState<ResourceType>("link")
   const [title, setTitle] = useState("")
@@ -61,6 +63,7 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
     setScrapedSuccessfully(false)
     setIsGeneratingThumbnail(false)
     setDuplicateWarning(null)
+    setShowAllTags(false)
   }
 
   const checkForDuplicates = (checkTitle: string, checkUrl: string): Resource | null => {
@@ -763,9 +766,23 @@ export function AddResourceDialog({ onAddResource, popularTags, existingResource
               {/* Suggested Tags */}
               {popularTags.filter(t => !tags.includes(t.tag)).length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">Popular tags:</p>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">Popular tags:</p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAllTags(!showAllTags)}
+                      className="h-6 text-xs px-2"
+                    >
+                      {showAllTags ? "Show Less" : "All Tags"}
+                    </Button>
+                  </div>
                   <div className="flex flex-wrap gap-1.5">
-                    {popularTags.filter(t => !tags.includes(t.tag)).slice(0, 6).map((tagObj) => (
+                    {(showAllTags 
+                      ? allTags.filter(t => !tags.includes(t.tag))
+                      : popularTags.filter(t => !tags.includes(t.tag)).slice(0, 6)
+                    ).map((tagObj) => (
                       <Badge
                         key={tagObj.tag}
                         variant="outline"

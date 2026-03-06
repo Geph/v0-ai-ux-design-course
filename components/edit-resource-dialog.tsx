@@ -20,6 +20,7 @@ interface EditResourceDialogProps {
   onSave: (resource: Resource) => void
   onDelete: (id: string) => void
   popularTags: string[]
+  allTags: string[]
 }
 
 export function EditResourceDialog({ 
@@ -28,9 +29,11 @@ export function EditResourceDialog({
   onOpenChange, 
   onSave, 
   onDelete,
-  popularTags 
+  popularTags,
+  allTags 
 }: EditResourceDialogProps) {
   const [title, setTitle] = useState("")
+  const [showAllTags, setShowAllTags] = useState(false)
   const [author, setAuthor] = useState("")
   const [summary, setSummary] = useState("")
   const [tags, setTags] = useState<string[]>([])
@@ -53,6 +56,7 @@ export function EditResourceDialog({
       setUrl(resource.url)
       setType(resource.type)
       setShowDeleteConfirm(false)
+      setShowAllTags(false)
     }
   }, [resource])
 
@@ -364,9 +368,23 @@ export function EditResourceDialog({
             {/* Suggested Tags */}
             {suggestedTags.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Popular tags:</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">Popular tags:</p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAllTags(!showAllTags)}
+                    className="h-6 text-xs px-2"
+                  >
+                    {showAllTags ? "Show Less" : "All Tags"}
+                  </Button>
+                </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {suggestedTags.slice(0, 6).map((tagObj) => (
+                  {(showAllTags 
+                    ? allTags.filter(t => !tags.includes(t.tag))
+                    : suggestedTags.slice(0, 6)
+                  ).map((tagObj) => (
                     <Badge
                       key={tagObj.tag}
                       variant="outline"
