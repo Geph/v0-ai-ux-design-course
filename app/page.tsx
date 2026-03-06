@@ -21,7 +21,7 @@ const DEFAULT_APP_NAME = "AI Teaching Tools"
 const DEFAULT_APP_DESCRIPTION = "A curated and reviewed collection of AI tools relevant to teachers"
 const FOOTER_TEXT = 'A resource library template created for <a href="https://courses.illinois.edu/schedule/terms/INFO/490" target="_blank" rel="noopener noreferrer">Informatics 490: User Experience Design with AI</a>, a course at the University of Illinois at Urbana-Champaign'
 
-const APP_VERSION = "v0.3.1"
+const APP_VERSION = "v0.3.2"
 
 export default function ResourceLibrary() {
   const [resources, setResources] = useState<Resource[]>(initialResources)
