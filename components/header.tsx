@@ -10,6 +10,7 @@ interface HeaderProps {
   onAddResource: (resource: Resource) => void
   onImport: (resources: Resource[]) => void
   popularTags: TagWithCount[]
+  allTags: TagWithCount[]
   appName?: string
   appDescription?: string
   appVersion?: string
@@ -20,6 +21,7 @@ export function Header({
   onAddResource, 
   onImport, 
   popularTags,
+  allTags,
   appName = "User Experience Design with AI",
   appDescription = "Explore our curated collection of learning resources to master the intersection of UX design and artificial intelligence.",
   appVersion = "v0.3.0"
@@ -57,7 +59,7 @@ export function Header({
 
         {/* Add Resource Button */}
         <div className="flex justify-center">
-          <AddResourceDialog onAddResource={onAddResource} popularTags={popularTags} existingResources={resources} />
+          <AddResourceDialog onAddResource={onAddResource} popularTags={popularTags} allTags={allTags} existingResources={resources} />
         </div>
       </div>
     </header>

@@ -7,7 +7,7 @@ import { SettingsDialog } from "@/components/settings-dialog"
 import { TagFilter } from "@/components/tag-filter"
 import { ResourceGallery } from "@/components/resource-gallery"
 import { EditResourceDialog } from "@/components/edit-resource-dialog"
-import { resources as initialResources, type Resource, type ResourceType, type TagWithCount, getPopularTags } from "@/lib/resources-data"
+import { resources as initialResources, type Resource, type ResourceType, type TagWithCount, getPopularTags, getAllTags } from "@/lib/resources-data"
 import { xmlToResources, resourcesToXml } from "@/lib/xml-utils"
 import { colorPalettes, applyPalette, PALETTE_STORAGE_KEY, THEME_STORAGE_KEY } from "@/lib/color-palettes"
 import { SlidersHorizontal, X, ChevronDown, ChevronUp } from "lucide-react"
@@ -105,6 +105,10 @@ export default function ResourceLibrary() {
     return getPopularTags(resources)
   }, [resources])
 
+  const allTags = useMemo(() => {
+    return getAllTags(resources)
+  }, [resources])
+
   const filteredResources = useMemo(() => {
     return resources.filter((resource) => {
       // Search filter
@@ -191,6 +195,7 @@ export default function ResourceLibrary() {
         onAddResource={handleAddResource} 
         onImport={handleImport} 
         popularTags={popularTags}
+        allTags={allTags}
         appName={appName}
         appDescription={appDescription}
         appVersion={APP_VERSION}
@@ -276,6 +281,7 @@ export default function ResourceLibrary() {
         onSave={handleUpdateResource}
         onDelete={handleDeleteResource}
         popularTags={popularTags}
+        allTags={allTags}
       />
 
       {/* Footer */}
